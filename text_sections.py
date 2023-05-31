@@ -23,34 +23,59 @@ def intro_text():
     col1, col2 = st.columns([8, 2])
     with col1:
         st.title("Plot Confusion Matrix")
-        st.write(
-            "This application allows you to plot a confusion matrix based on your own data. "
+        st.markdown(
+            "A confusion matrix plot is a great tool for inspecting your "
+            "machine learning model's performance on a classification task. "
+            "This application enables you to plot a confusion matrix on your own data, "
+            "**without a single line of code**. \n\n"
+            "It's designed for high flexibility AND quick results with good default settings.\n\n"
         )
     with col2:
         st.image(
             "https://github.com/LudvigOlsen/cvms/raw/master/man/figures/cvms_logo_242x280_250dpi.png",
             width=125,
         )
-
+    st.markdown("""---""")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("Have your data ready?")
+        st.markdown(  # TODO: Make A,B, etc. icons
+            "Upload a csv file with either: \n\n"
+            "A) **Targets** and **predictions**. \n\n"
+            "B) Existing confusion matrix **counts**. \n\n"
+            "--> Specify the columns to use.\n\n"
+            "--> Press **Generate plot**.\n\n"
+        )
+    with col2:
+        st.subheader("No data to upload?")
+        st.markdown(
+            "No worries! Either: \n\n"
+            "C) **Input** your counts directly! \n\n"
+            "D) **Generate* some data with **very** easy controls! \n\n"
+            "--> Press **Generate plot**.\n\n"
+        )
+    st.markdown("""---""")
     st.write(
         "The plot is created with the [**cvms**](https://github.com/LudvigOlsen/cvms) R package "
         f"(v/{get_cvms_version()}, LR Olsen & HB Zachariae, 2019)."
-    )
+    )  # TODO Add citation stuff
 
-    st.write(
-        "DATA PRIVACY: In order to transfer the data "
-        "between python and R, it is temporarily stored on the servers. "
-        "While we, the authors, have no intention of looking at your data, we make "
-        "*no guarantees* about the privacy of your data (it is not our servers). "
+    st.markdown(
+        '<p class="small-font">'
+        "DATA PRIVACY: For technical reasons, the uploaded data is temporarily stored "
+        "on the server. While we, the authors, won't access your data, we make "
+        "*no guarantees* about the privacy of your data (not our servers). "
         "Please do not upload sensitive data. The application "
-        "only requires columns with predictions and targets."
+        "only requires either predictions and targets or counts. "
+        "</p>",
+        unsafe_allow_html=True,
     )
 
 
 def generate_data_text():
     st.subheader("Generate data")
     st.write(
-        "If you just want to try out the application, you can generate a dataset with targets and predictions. "
+        "Quickly try the application by generating a dataset with targets and predictions. "
         "Select a number of classes and observations, and you're ready to go! "
     )
 
@@ -77,6 +102,7 @@ def upload_counts_text():
         "See example of such a .csv file [here] (TODO). "
     )
 
+
 def upload_predictions_text():
     st.subheader("Upload your predictions")
     st.markdown(
@@ -85,7 +111,7 @@ def upload_predictions_text():
         "Targets will be converted into strings. \n\n"
         "2) A `prediction` column.  \n"
         "Predictions can be probabilities (binary classification only) or class predictions. \n\n"
-        "Other columns are currently ignored.  \n\n" 
+        "Other columns are currently ignored.  \n\n"
         "You will have the option to select the names of these two columns, so don't "
         "worry too much about the column names in the uploaded data."
     )

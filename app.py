@@ -33,6 +33,14 @@ from text_sections import (
     enter_count_data_text,
 )
 
+st.markdown("""
+<style>
+.small-font {
+    font-size:0.85em !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 
 # Create temporary directory
 
@@ -103,7 +111,9 @@ if input_choice == "Upload predictions":
                 st.session_state["step"] = 1
             else:
                 st.session_state["step"] = 0
-                st.markdown("Please upload a file first (or **generate** some random data to try the function).")
+                st.markdown(
+                    "Please upload a file first (or **generate** some random data to try the function)."
+                )
 
     if st.session_state["step"] >= 1:
         # Read and store (tmp) data
@@ -122,8 +132,8 @@ if input_choice == "Upload predictions":
 elif input_choice == "Upload counts":
     with st.form(key="data_form"):
         upload_counts_text()
-        data_path = st.file_uploader("Upload a dataset", type=["csv"])
-        if st.form_submit_button(label="Use data"):
+        data_path = st.file_uploader("Upload your counts", type=["csv"])
+        if st.form_submit_button(label="Use counts"):
             if data_path:
                 st.session_state["step"] = 1
             else:
@@ -139,9 +149,7 @@ elif input_choice == "Upload counts":
             prediction_col = st.selectbox(
                 "Predictions column", options=list(df.columns)
             )
-            n_col = st.selectbox(
-                "Counts column", options=list(df.columns)
-            )
+            n_col = st.selectbox("Counts column", options=list(df.columns))
 
             if st.form_submit_button(label="Set columns"):
                 st.session_state["step"] = 2
@@ -286,7 +294,7 @@ if st.session_state["step"] >= 2:
         col1, col2, col3 = st.columns([2, 2, 2])
         with col2:
             st.write(df.head(5))
-            st.write(f"{df.shape} (first 5 rows).")
+            st.write(f"{df.shape} (Showing first 5 rows)")
 
     else:
         st.session_state["entered_counts"].to_csv(data_store_path)
@@ -314,7 +322,10 @@ if st.session_state["step"] >= 2:
                 "of another class is excluded.",
             )
         with col2:
-            if st.session_state["input_type"] == "data" and predictions_are_probabilities:
+            if (
+                st.session_state["input_type"] == "data"
+                and predictions_are_probabilities
+            ):
                 prob_of_class = st.selectbox(
                     "Probabilities are of (not working)",
                     options=st.session_state["classes"],
@@ -401,7 +412,7 @@ if st.session_state["step"] >= 2:
         with col3:
             dpi = st.number_input("DPI (not working)", value=320)
 
-        if st.form_submit_button(label="Apply"):
+        if st.form_submit_button(label="Generate plot"):
             st.session_state["step"] = 3
 
     if st.session_state["step"] >= 3:
