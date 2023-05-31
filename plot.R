@@ -173,7 +173,6 @@ if (!isTRUE(data_are_counts)) {
     # We remove the unwanted classes from the confusion matrix
     # (easier - possibly slower in edge cases)
     family <- ifelse(length(all_present_classes) == 2, "binomial", "multinomial")
-    print(df)
 
     # TODO : use prob_of_class to ensure probabilities are interpreted correctly!!
     # Might need to invert them to get it to work!

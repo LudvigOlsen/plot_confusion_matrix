@@ -301,7 +301,6 @@ if st.session_state["step"] >= 2:
 
     # Check the number of classes
     num_classes = len(st.session_state["classes"])
-    print(st.session_state["classes"])
     if num_classes < 2:
         # TODO Handle better than throwing error?
         raise ValueError(
