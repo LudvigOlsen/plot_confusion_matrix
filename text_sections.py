@@ -51,7 +51,7 @@ def intro_text():
         st.markdown(
             "No worries! Either: \n\n"
             "C) **Input** your counts directly! \n\n"
-            "D) **Generate* some data with **very** easy controls! \n\n"
+            "D) **Generate** some data with **very** easy controls! \n\n"
             "--> Press **Generate plot**.\n\n"
         )
     st.markdown("""---""")

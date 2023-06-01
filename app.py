@@ -333,48 +333,50 @@ if st.session_state["step"] >= 2:
             else:
                 prob_of_class = None
 
-        default_elements = [
-            "Counts",
-            "Normalized Counts (%)",
-            "Zero Shading",
-            "Arrows",
-        ]
-        if num_classes < 6:
-            # Percentages clutter too much with many classes
-            default_elements += [
-                "Row Percentages",
-                "Column Percentages",
-            ]
-        elements_to_add = st.multiselect(
-            "Add the following elements",
-            options=[
-                "Sum Tiles",
+        with st.expander("Advanced"):
+
+            default_elements = [
                 "Counts",
                 "Normalized Counts (%)",
-                "Row Percentages",
-                "Column Percentages",
                 "Zero Shading",
-                "Zero Percentages",
-                "Zero Text",
                 "Arrows",
-            ],
-            default=default_elements,
-        )
+            ]
+            if num_classes < 6:
+                # Percentages clutter too much with many classes
+                default_elements += [
+                    "Row Percentages",
+                    "Column Percentages",
+                ]
+            elements_to_add = st.multiselect(
+                "Add the following elements",
+                options=[
+                    "Sum Tiles",
+                    "Counts",
+                    "Normalized Counts (%)",
+                    "Row Percentages",
+                    "Column Percentages",
+                    "Zero Shading",
+                    "Zero Percentages",
+                    "Zero Text",
+                    "Arrows",
+                ],
+                default=default_elements,
+            )
 
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            counts_on_top = st.checkbox(
-                "Counts on top (not working)",
-                help="Whether to switch the positions of the counts and normalized counts (%). "
-                "That is, the counts become the big centralized numbers and the "
-                "normalized counts go below with a smaller font size.",
-            )
-        with col2:
-            diag_percentages_only = st.checkbox("Diagonal row/column percentages only")
-        with col3:
-            num_digits = st.number_input(
-                "Digits", value=2, help="Number of digits to round percentages to."
-            )
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                counts_on_top = st.checkbox(
+                    "Counts on top (not working)",
+                    help="Whether to switch the positions of the counts and normalized counts (%). "
+                    "That is, the counts become the big centralized numbers and the "
+                    "normalized counts go below with a smaller font size.",
+                )
+            with col2:
+                diag_percentages_only = st.checkbox("Diagonal row/column percentages only")
+            with col3:
+                num_digits = st.number_input(
+                    "Digits", value=2, help="Number of digits to round percentages to."
+                )
 
         element_flags = [
             key
