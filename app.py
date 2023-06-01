@@ -318,6 +318,28 @@ if st.session_state["step"] >= 2:
     )
 
     if st.session_state["step"] >= 3:
+        # TODO Fix and update these flags
+        element_flags = [
+            key
+            for key, val in {
+                "--add_counts": design_settings["show_counts"],
+                "--add_normalized": design_settings["show_normalized"],
+                "--add_sums": design_settings["show_sums"],
+                "--add_row_percentages": design_settings["show_row_percentages"],
+                "--add_col_percentages": design_settings["show_col_percentages"],
+                "--add_arrows": design_settings["show_arrows"],
+                "--add_zero_percentages": design_settings["show_zero_percentages"],
+                "--add_zero_text": design_settings["show_zero_text"],
+                "--add_zero_shading": design_settings["show_zero_shading"],
+                "--add_tile_border": design_settings["show_tile_border"],
+                "--counts_on_top": design_settings["counts_on_top"],
+                "--diag_percentages_only": design_settings["diag_percentages_only"],
+                "--rotate_y_text": design_settings["rotate_y_text"],
+                "--place_x_axis_above": design_settings["place_x_axis_above"],
+            }.items()
+            if val
+        ]
+
         plotting_args = [
             "--data_path",
             f"'{data_store_path}'",
