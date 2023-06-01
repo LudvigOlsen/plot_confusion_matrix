@@ -23,23 +23,26 @@ from collections import OrderedDict
 
 from utils import call_subprocess, clean_string_for_non_alphanumerics
 from data import read_data, read_data_cached, DownloadHeader, generate_data
+from design import design_section
 from text_sections import (
     intro_text,
     columns_text,
     upload_predictions_text,
     upload_counts_text,
     generate_data_text,
-    design_text,
     enter_count_data_text,
 )
 
-st.markdown("""
+st.markdown(
+    """
 <style>
 .small-font {
     font-size:0.85em !important;
 }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 
 # Create temporary directory
@@ -308,113 +311,11 @@ if st.session_state["step"] >= 2:
             f"Got {num_classes} target classes."
         )
 
-    with st.form(key="settings_form"):
-        design_text()
-        col1, col2 = st.columns(2)
-        with col1:
-            selected_classes = st.multiselect(
-                "Select classes (min=2, order is respected)",
-                options=st.session_state["classes"],
-                default=st.session_state["classes"],
-                help="Select the classes to create the confusion matrix for. "
-                "Any observation with either a target or prediction "
-                "of another class is excluded.",
-            )
-        with col2:
-            if (
-                st.session_state["input_type"] == "data"
-                and predictions_are_probabilities
-            ):
-                prob_of_class = st.selectbox(
-                    "Probabilities are of (not working)",
-                    options=st.session_state["classes"],
-                    index=1,
-                )
-            else:
-                prob_of_class = None
-
-        with st.expander("Advanced"):
-
-            default_elements = [
-                "Counts",
-                "Normalized Counts (%)",
-                "Zero Shading",
-                "Arrows",
-            ]
-            if num_classes < 6:
-                # Percentages clutter too much with many classes
-                default_elements += [
-                    "Row Percentages",
-                    "Column Percentages",
-                ]
-            elements_to_add = st.multiselect(
-                "Add the following elements",
-                options=[
-                    "Sum Tiles",
-                    "Counts",
-                    "Normalized Counts (%)",
-                    "Row Percentages",
-                    "Column Percentages",
-                    "Zero Shading",
-                    "Zero Percentages",
-                    "Zero Text",
-                    "Arrows",
-                ],
-                default=default_elements,
-            )
-
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                counts_on_top = st.checkbox(
-                    "Counts on top (not working)",
-                    help="Whether to switch the positions of the counts and normalized counts (%). "
-                    "That is, the counts become the big centralized numbers and the "
-                    "normalized counts go below with a smaller font size.",
-                )
-            with col2:
-                diag_percentages_only = st.checkbox("Diagonal row/column percentages only")
-            with col3:
-                num_digits = st.number_input(
-                    "Digits", value=2, help="Number of digits to round percentages to."
-                )
-
-        element_flags = [
-            key
-            for key, val in {
-                "--add_sums": "Sum Tiles" in elements_to_add,
-                "--add_counts": "Counts" in elements_to_add,
-                "--add_normalized": "Normalized Counts (%)" in elements_to_add,
-                "--add_row_percentages": "Row Percentages" in elements_to_add,
-                "--add_col_percentages": "Column Percentages" in elements_to_add,
-                "--add_zero_percentages": "Zero Percentages" in elements_to_add,
-                "--add_zero_text": "Zero Text" in elements_to_add,
-                "--add_zero_shading": "Zero Shading" in elements_to_add,
-                "--add_arrows": "Arrows" in elements_to_add,
-                "--counts_on_top": counts_on_top,
-                "--diag_percentages_only": diag_percentages_only,
-            }.items()
-            if val
-        ]
-
-        palette = st.selectbox(
-            "Color Palette",
-            options=["Blues", "Greens", "Oranges", "Greys", "Purples", "Reds"],
-        )
-
-        # Ask for output parameters
-        # TODO: Set default based on number of classes and sum tiles
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            width = st.number_input("Width (px)", value=1200 + 100 * (num_classes - 2))
-        with col2:
-            height = st.number_input(
-                "Height (px)", value=1200 + 100 * (num_classes - 2)
-            )
-        with col3:
-            dpi = st.number_input("DPI (not working)", value=320)
-
-        if st.form_submit_button(label="Generate plot"):
-            st.session_state["step"] = 3
+    # Section for specifying design settings
+    design_settings = design_section(
+        num_classes=num_classes,
+        predictions_are_probabilities=predictions_are_probabilities,
+    )
 
     if st.session_state["step"] >= 3:
         plotting_args = [
@@ -427,24 +328,24 @@ if st.session_state["step"] >= 2:
             "--prediction_col",
             f"'{prediction_col}'",
             "--width",
-            f"{width}",
+            f"{design_settings['width']}",
             "--height",
-            f"{height}",
+            f"{design_settings['height']}",
             "--dpi",
-            f"{dpi}",
+            f"{design_settings['dpi']}",
             "--classes",
-            f"{','.join(selected_classes)}",
+            f"{','.join(design_settings['selected_classes'])}",
             "--digits",
-            f"{num_digits}",
+            f"{design_settings['num_digits']}",
             "--palette",
-            f"{palette}",
+            f"{design_settings['palette']}",
         ]
 
         if st.session_state["input_type"] == "counts":
             # The input data are counts
             plotting_args += ["--n_col", f"{n_col}", "--data_are_counts"]
 
-        plotting_args += element_flags
+        plotting_args += design_settings["element_flags"]
 
         plotting_args = " ".join(plotting_args)
 
