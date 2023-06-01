@@ -53,25 +53,49 @@ def design_section(
         col1, col2, col3 = st.columns(3)
         with col1:
             output["width"] = st.number_input(
-                "Width (px)", value=1200 + 100 * (num_classes - 2)
+                "Width (px)", value=1200 + 100 * (num_classes - 2), step=50
             )
         with col2:
             output["height"] = st.number_input(
-                "Height (px)", value=1200 + 100 * (num_classes - 2)
+                "Height (px)", value=1200 + 100 * (num_classes - 2), step=50
             )
         with col3:
-            output["dpi"] = st.number_input("DPI (not working)", value=320)
+            output["dpi"] = st.number_input("DPI (not working)", value=320, step=10)
+
+        st.write(" ")  # Slightly bigger gap between the two sections
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            output["show_counts"] = st.checkbox("Show Counts", value=True)
+        with col2:
+            output["show_normalized"] = st.checkbox("Show Normalized (%)", value=True)
+        with col3:
+            output["show_sums"] = st.checkbox(
+                "Show Sum Tiles",
+                value=False,
+                help="Show extra row and column with the "
+                "totals for that row/column.",
+            )
+
+        st.markdown("""---""")
+        st.markdown("**Advanced**:")
 
         with st.expander("Elements"):
-            col1, col2, col3 = st.columns(3)
+            col1, col2 = st.columns(2)
             with col1:
-                output["show_counts"] = st.checkbox("Show counts", value=True)
-            with col2:
-                output["show_normalized"] = st.checkbox(
-                    "Show normalized (%)", value=True
+                output["rotate_y_text"] = st.checkbox("Rotate y-axis text", value=True)
+                output["place_x_axis_above"] = st.checkbox(
+                    "Place x-axis on top", value=True
                 )
-            with col3:
-                output["show_sums"] = st.checkbox("Show sum tiles", value=False)
+                output["counts_on_top"] = st.checkbox(
+                    "Counts on top (not working)",
+                    help="Whether to switch the positions of the counts and normalized counts (%). "
+                    "The counts become the big centralized numbers and the "
+                    "normalized counts go below with a smaller font size.",
+                )
+            with col2:
+                output["num_digits"] = st.number_input(
+                    "Digits", value=2, help="Number of digits to round percentages to."
+                )
 
             st.markdown("""---""")
 
@@ -85,6 +109,9 @@ def design_section(
                     "Show column percentages", value=num_classes < 6
                 )
                 output["show_arrows"] = st.checkbox("Show arrows", value=True)
+                output["diag_percentages_only"] = st.checkbox(
+                    "Diagonal row/column percentages only"
+                )
             with col2:
                 output["arrow_size"] = (
                     st.slider(
@@ -105,21 +132,6 @@ def design_section(
                         step=0.001 * 10,
                     )
                     / 10
-                )
-
-            st.markdown("""---""")
-
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                output["counts_on_top"] = st.checkbox(
-                    "Counts on top (not working)",
-                    help="Whether to switch the positions of the counts and normalized counts (%). "
-                    "That is, the counts become the big centralized numbers and the "
-                    "normalized counts go below with a smaller font size.",
-                )
-            with col2:
-                output["diag_percentages_only"] = st.checkbox(
-                    "Diagonal row/column percentages only"
                 )
 
         with st.expander("Tiles"):
@@ -172,6 +184,36 @@ def design_section(
                     ],
                 )
 
+            st.markdown("""---""")
+
+            st.write("Sum tile settings:")
+
+            col1, col2 = st.columns(2)
+            with col1:
+                output["sum_tile_palette"] = st.selectbox(
+                    "Color Palette",
+                    key="sum_tiles_color_palette",
+                    options=["Greens", "Oranges", "Greys", "Purples", "Reds", "Blues"],
+                )
+            with col2:
+                output["sum_tile_label"] = st.text_input(
+                    "Label",
+                    value="Σ",
+                    key="sum_tiles_label",
+                )
+
+            #   label = NULL,
+            #   tile_fill = NULL,
+            #   font_color = NULL,
+            #   tile_border_color = NULL,
+            #   tile_border_size = NULL,
+            #   tile_border_linetype = NULL,
+            #   tc_tile_fill = NULL,
+            #   tc_font_color = NULL,
+            #   tc_tile_border_color = NULL,
+            #   tc_tile_border_size = NULL,
+            #   tc_tile_border_linetype = NULL
+
         with st.expander("Zero Counts"):
             st.write("Special settings for tiles where the count is 0:")
             col1, col2, col3 = st.columns(3)
@@ -190,27 +232,15 @@ def design_section(
                     help="Only relevant when row/column percentages are enabled.",
                 )
 
-        with st.expander("Text"):
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                output["num_digits"] = st.number_input(
-                    "Digits", value=2, help="Number of digits to round percentages to."
-                )
-            with col2:
-                output["rotate_y_text"] = st.checkbox("Rotate y text", value=True)
-            with col3:
-                output["place_x_axis_above"] = st.checkbox(
-                    "Place X axis on top", value=True
-                )
-
         with st.expander("Fonts"):
             font_dicts = {}
-            for font_type in [
+            font_types = [
                 "Counts",
                 "Normalized (%)",
                 "Row Percentage",
                 "Column Percentage",
-            ]:
+            ]
+            for font_type in font_types:
                 st.subheader(font_type)
                 num_cols = 3
                 font_dicts[font_type] = font_inputs(key_prefix=font_type)
@@ -220,10 +250,24 @@ def design_section(
                     with cols[i % num_cols]:
                         setting_widget()
 
-                st.markdown("""---""")
+                if font_type != font_types[-1]:
+                    st.markdown("""---""")
+
+        st.markdown("""---""")
 
         if st.form_submit_button(label="Generate plot"):
             st.session_state["step"] = 3
+
+        if st.session_state["step"] >= 3:
+            output["design_ready"] = True
+            if output["show_sums"] and output["sum_tile_palette"] == output["palette"]:
+                st.error(
+                    "The color palettes (background colors) "
+                    "for the tiles and sum tiles are identical. "
+                    "Please select a different color palette for "
+                    "the sum tiles under **Tiles** >> *Sum tile settings*."
+                )
+                output["design_ready"] = False
 
         return output
 

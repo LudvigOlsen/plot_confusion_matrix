@@ -317,7 +317,9 @@ if st.session_state["step"] >= 2:
         predictions_are_probabilities=predictions_are_probabilities,
     )
 
-    if st.session_state["step"] >= 3:
+    # design_ready tells us whether to proceed or wait 
+    # for user to fix issues
+    if st.session_state["step"] >= 3 and design_settings["design_ready"]:
         # TODO Fix and update these flags
         element_flags = [
             key
@@ -367,7 +369,7 @@ if st.session_state["step"] >= 2:
             # The input data are counts
             plotting_args += ["--n_col", f"{n_col}", "--data_are_counts"]
 
-        plotting_args += design_settings["element_flags"]
+        plotting_args += element_flags
 
         plotting_args = " ".join(plotting_args)
 

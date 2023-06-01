@@ -127,3 +127,8 @@ def columns_text():
 def design_text():
     st.subheader("Design your plot")
     st.write("This is where you customize the design of your confusion matrix plot.")
+    st.write(
+        "The width and height settings are usually necessary to adjust as they "
+        "change the relative size of the elements. Try adjusting 100px at a "
+        "time for a start."
+    )
