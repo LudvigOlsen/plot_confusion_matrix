@@ -3,12 +3,21 @@ App for plotting confusion matrix with `cvms::plot_confusion_matrix()`.
 
 TODO:
 - IMPORTANT! Allow specifying which class probabilities are of! (See plot prob_of_class)
+- IMPORTANT! Use json/txt file to pass settings to r instead?
+- IMPORTANT! Allow saving and uploading design settings - so many of them
+  that one shouldn't have to enter all the changes for every plot
+  when making multiple at a time!
 - Allow setting threshold - manual, max J, spec/sens
 - Add bg box around confusion matrix plot as text dissappears on dark mode!
 - ggsave does not use dpi??
 - allow svg, pdf?
 - entered count -> counts (upload as well)
-- Add full reset button (empty cache on different files)
+- Add full reset button (empty cache on different files) - callback?
+- Handle <2 classes in design box (add st.error)
+- Handle classes with spaces in them?
+
+NOTE: 
+
 
 """
 
@@ -61,6 +70,7 @@ def set_tmp_dir():
 temp_dir, temp_dir_path = set_tmp_dir()
 gen_data_store_path = pathlib.Path(f"{temp_dir_path}/generated_data.csv")
 data_store_path = pathlib.Path(f"{temp_dir_path}/data.csv")
+design_settings_store_path = pathlib.Path(f"{temp_dir_path}/design_settings.json")
 conf_mat_path = pathlib.Path(f"{temp_dir_path}/confusion_matrix.png")
 
 
@@ -312,64 +322,42 @@ if st.session_state["step"] >= 2:
         )
 
     # Section for specifying design settings
-    design_settings = design_section(
+
+    design_settings, design_ready, selected_classes, prob_of_class = design_section(
         num_classes=num_classes,
         predictions_are_probabilities=predictions_are_probabilities,
+        design_settings_store_path=design_settings_store_path,
     )
 
-    # design_ready tells us whether to proceed or wait 
+    # design_ready tells us whether to proceed or wait
     # for user to fix issues
-    if st.session_state["step"] >= 3 and design_settings["design_ready"]:
-        # TODO Fix and update these flags
-        element_flags = [
-            key
-            for key, val in {
-                "--add_counts": design_settings["show_counts"],
-                "--add_normalized": design_settings["show_normalized"],
-                "--add_sums": design_settings["show_sums"],
-                "--add_row_percentages": design_settings["show_row_percentages"],
-                "--add_col_percentages": design_settings["show_col_percentages"],
-                "--add_arrows": design_settings["show_arrows"],
-                "--add_zero_percentages": design_settings["show_zero_percentages"],
-                "--add_zero_text": design_settings["show_zero_text"],
-                "--add_zero_shading": design_settings["show_zero_shading"],
-                "--add_tile_border": design_settings["show_tile_border"],
-                "--counts_on_top": design_settings["counts_on_top"],
-                "--diag_percentages_only": design_settings["diag_percentages_only"],
-                "--rotate_y_text": design_settings["rotate_y_text"],
-                "--place_x_axis_above": design_settings["place_x_axis_above"],
-            }.items()
-            if val
-        ]
+    if st.session_state["step"] >= 3 and design_ready:
+        DownloadHeader.header_and_json_download(
+            header="Confusion Matrix Plot",
+            data=design_settings,
+            file_name="design_settings.json",
+            label="Download design settings",
+            help="Download the design settings to allow reusing setttings in future plots.",
+        )
 
         plotting_args = [
             "--data_path",
             f"'{data_store_path}'",
             "--out_path",
             f"'{conf_mat_path}'",
+            "--settings_path",
+            f"'{design_settings_store_path}'",
             "--target_col",
             f"'{target_col}'",
             "--prediction_col",
             f"'{prediction_col}'",
-            "--width",
-            f"{design_settings['width']}",
-            "--height",
-            f"{design_settings['height']}",
-            "--dpi",
-            f"{design_settings['dpi']}",
             "--classes",
-            f"{','.join(design_settings['selected_classes'])}",
-            "--digits",
-            f"{design_settings['num_digits']}",
-            "--palette",
-            f"{design_settings['palette']}",
+            f"{','.join(selected_classes)}",
         ]
 
         if st.session_state["input_type"] == "counts":
             # The input data are counts
             plotting_args += ["--n_col", f"{n_col}", "--data_are_counts"]
-
-        plotting_args += element_flags
 
         plotting_args = " ".join(plotting_args)
 
