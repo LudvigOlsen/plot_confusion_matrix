@@ -1,25 +1,6 @@
 """
 App for plotting confusion matrix with `cvms::plot_confusion_matrix()`.
 
-TODO:
-- IMPORTANT! Allow specifying which class probabilities are of! (See plot prob_of_class)
-- IMPORTANT! Use json/txt file to pass settings to r instead?
-- IMPORTANT! Allow saving and uploading design settings - so many of them
-  that one shouldn't have to enter all the changes for every plot
-  when making multiple at a time!
-- Allow setting threshold - manual, max J, spec/sens
-- Add bg box around confusion matrix plot as text dissappears on dark mode!
-- ggsave does not use dpi??
-- allow svg, pdf?
-- entered count -> counts (upload as well)
-- Add full reset button (empty cache on different files) - callback?
-- Handle <2 classes in design box (add st.error)
-- Handle classes with spaces in them?
-- Add option to change zero-tile background (e.g. to black for black backgrounds)
-
-NOTE: 
-
-
 """
 
 import pathlib

@@ -82,17 +82,19 @@ def design_section(
                 "of another class is excluded.",
             )
         with col2:
-            if (
-                st.session_state["input_type"] == "data"
-                and predictions_are_probabilities
-            ):
-                prob_of_class = st.selectbox(
-                    "Probabilities are of (not working)",
-                    options=st.session_state["classes"],
-                    index=1,
-                )
-            else:
-                prob_of_class = None
+            prob_of_class = None
+            # Not respected, so disabled for now
+            # if (
+            #     st.session_state["input_type"] == "data"
+            #     and predictions_are_probabilities
+            # ):
+            #     prob_of_class = st.selectbox(
+            #         "Probabilities are of (not working)",
+            #         options=st.session_state["classes"],
+            #         index=1,
+            #     )
+            # else:
+            #     prob_of_class = None
 
         # Color palette
         output["palette"] = _add_select_box(
