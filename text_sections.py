@@ -56,7 +56,7 @@ def intro_text():
         )
     st.markdown("""---""")
     st.markdown(
-        "This release is a **beta** version. Report errors or suggestions "
+        "This release is an **alpha** version (very early). Report errors or suggestions "
         "on [GitHub](https://github.com/LudvigOlsen/cvms_plot_app/issues)."
     )
     st.write(
