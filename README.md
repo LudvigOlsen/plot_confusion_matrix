@@ -1,6 +1,19 @@
+---
+title: plot_confusion_matrix
+sdk: streamlit
+python_version: 3.11
+sdk_version: 1.19
+app_file: app.py
+pinned: true
+---
+
 # cvms_plot_app
 
 Streamlit application for plotting a confusion matrix.
+
+emoji: {{emoji}}
+colorFrom: {{colorFrom}}
+colorTo: {{colorTo}}
 
 
 ## TODOs
