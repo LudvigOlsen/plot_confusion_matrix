@@ -1,3 +1,4 @@
+import pathlib
 from typing import List, Callable, Any, Tuple
 import json
 import numpy as np
@@ -380,7 +381,7 @@ def design_section(
                             "color": "#000000",
                             "alpha": 1.0,
                             "bold": False,
-                            "italics": False,
+                            "italic": False,
                         },
                     },
                     "Bottom Font": {
@@ -391,7 +392,7 @@ def design_section(
                             "color": "#000000",
                             "alpha": 1.0,
                             "bold": False,
-                            "italics": False,
+                            "italic": False,
                         },
                     },
                     "Percentages Font": {
@@ -402,7 +403,7 @@ def design_section(
                             "color": "#000000",
                             "alpha": 0.85,
                             "bold": False,
-                            "italics": True,
+                            "italic": True,
                             "suffix": "%",
                             "prefix": "",
                         },
@@ -449,7 +450,10 @@ def design_section(
 
         if st.form_submit_button(label="Generate plot"):
             st.session_state["step"] = 3
-            if output["show_sums"] and output["sum_tile_palette"] == output["palette"]:
+            if (
+                not output["show_sums"]
+                or output["sum_tile_palette"] != output["palette"]
+            ):
                 # Save settings as json
                 with open(design_settings_store_path, "w") as f:
                     json.dump(output, f)
@@ -490,8 +494,8 @@ def create_font_settings(
             key=k,
             value=get_setting_fn(key=k, default=d, type_=bool),
         ),
-        make_key("italics"): lambda k, d: st.checkbox(
-            "Italics",
+        make_key("italic"): lambda k, d: st.checkbox(
+            "Italic",
             key=k,
             value=get_setting_fn(key=k, default=d, type_=bool),
         ),

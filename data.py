@@ -36,7 +36,7 @@ class DownloadHeader:
     def header_and_image_download(
         header, filepath, key=None, label="Download", help="Download plot"
     ):
-        col1, col2 = st.columns([9, 2])
+        col1, col2 = st.columns([11, 3])
         with col1:
             st.subheader(header)
         with col2:
@@ -57,9 +57,9 @@ class DownloadHeader:
 
     @staticmethod
     def header_and_data_download(
-        header, data, file_name, key=None, label="Download", help="Download data"
+        header, data, file_name, col_sizes=[9, 2], key=None, label="Download", help="Download data"
     ):
-        col1, col2 = st.columns([9, 2])
+        col1, col2 = st.columns(col_sizes)
         with col1:
             st.subheader(header)
         with col2:
@@ -73,12 +73,15 @@ class DownloadHeader:
             )
 
     @staticmethod
-    def header_and_json_download(
-        header, data: dict, file_name, download_col_size=4, key=None, label="Download", help="Download json file"
+    def centered_json_download(
+        data: dict,
+        file_name,
+        download_col_size=5,
+        key=None,
+        label="Download",
+        help="Download json file",
     ):
-        col1, col2 = st.columns([9, download_col_size])
-        with col1:
-            st.subheader(header)
+        col1, col2, col1 = st.columns([5, download_col_size, 5])
         with col2:
             data_json = json.dumps(data)
             st.download_button(

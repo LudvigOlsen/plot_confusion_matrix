@@ -15,6 +15,7 @@ TODO:
 - Add full reset button (empty cache on different files) - callback?
 - Handle <2 classes in design box (add st.error)
 - Handle classes with spaces in them?
+- Add option to change zero-tile background (e.g. to black for black backgrounds)
 
 NOTE: 
 
@@ -82,6 +83,11 @@ def input_choice_callback():
     st.session_state["step"] = 0
     st.session_state["input_type"] = None
 
+    to_delete = ["classes", "count_data"]
+    for key in to_delete:
+        if key in st.session_state:
+            st.session_state.pop(key)
+
     # Remove old tmp files
     if gen_data_store_path.exists():
         gen_data_store_path.unlink()
@@ -107,7 +113,6 @@ input_choice = st.radio(
     on_change=input_choice_callback,
 )
 
-# Check whether the expected output
 if st.session_state.get("input_type") is None:
     if input_choice in ["Upload predictions", "Generate"]:
         st.session_state["input_type"] = "data"
@@ -155,18 +160,28 @@ elif input_choice == "Upload counts":
 
     if st.session_state["step"] >= 1:
         # Read and store (tmp) data
-        df = read_data_cached(data_path)
+        st.session_state["count_data"] = read_data_cached(data_path)
         with st.form(key="column_form"):
             columns_text()
-            target_col = st.selectbox("Targets column", options=list(df.columns))
-            prediction_col = st.selectbox(
-                "Predictions column", options=list(df.columns)
+            target_col = st.selectbox(
+                "Targets column", options=list(st.session_state["count_data"].columns)
             )
-            n_col = st.selectbox("Counts column", options=list(df.columns))
+            prediction_col = st.selectbox(
+                "Predictions column",
+                options=list(st.session_state["count_data"].columns),
+            )
+            n_col = st.selectbox(
+                "Counts column", options=list(st.session_state["count_data"].columns)
+            )
 
             if st.form_submit_button(label="Set columns"):
                 st.session_state["step"] = 2
-
+                st.session_state["classes"] = sorted(
+                    [
+                        str(c)
+                        for c in st.session_state["count_data"][target_col].unique()
+                    ]
+                )
 
 # Generate data
 elif input_choice == "Generate":
@@ -215,9 +230,9 @@ elif input_choice == "Generate":
 elif input_choice == "Enter counts":
 
     def repopulate_matrix_callback():
-        if "entered_counts" not in st.session_state:
-            if "entered_counts" in st.session_state:
-                st.session_state.pop("entered_counts")
+        if "count_data" not in st.session_state:
+            if "count_data" in st.session_state:
+                st.session_state.pop("count_data")
 
     with st.form(key="enter_classes_form"):
         enter_count_data_text()
@@ -227,6 +242,7 @@ elif input_choice == "Enter counts":
             label="Populate matrix", on_click=repopulate_matrix_callback
         ):
             # Extract class names from comma-separated list
+            # TODO: Allow white space in classes?
             st.session_state["classes"] = [
                 clean_string_for_non_alphanumerics(s) for s in classes_joined.split(",")
             ]
@@ -237,7 +253,7 @@ elif input_choice == "Enter counts":
             all_pairs += [(c, c) for c in st.session_state["classes"]]
 
             # Prepopulate the matrix
-            st.session_state["entered_counts"] = pd.DataFrame(
+            st.session_state["count_data"] = pd.DataFrame(
                 all_pairs, columns=["Target", "Prediction"]
             )
 
@@ -252,8 +268,8 @@ elif input_choice == "Enter counts":
             cols = st.columns(num_cols)
             for i, (targ, pred) in enumerate(
                 zip(
-                    st.session_state["entered_counts"]["Target"],
-                    st.session_state["entered_counts"]["Prediction"],
+                    st.session_state["count_data"]["Target"],
+                    st.session_state["count_data"]["Prediction"],
                 )
             ):
                 count_input_fields[f"{targ}____{pred}"] = cols[
@@ -263,7 +279,7 @@ elif input_choice == "Enter counts":
             if st.form_submit_button(
                 label="Generate data",
             ):
-                st.session_state["entered_counts"]["N"] = [
+                st.session_state["count_data"]["N"] = [
                     int(val) for val in count_input_fields.values()
                 ]
                 st.session_state["step"] = 2
@@ -271,11 +287,15 @@ elif input_choice == "Enter counts":
     if st.session_state["step"] >= 2:
         DownloadHeader.header_and_data_download(
             "Entered counts",
-            data=st.session_state["entered_counts"],
-            file_name="Confusion_Matrix_Counts.csv",
+            data=st.session_state["count_data"],
+            file_name="confusion_matrix_counts.csv",
             help="Download counts",
+            col_sizes=[10, 2],
         )
-        st.write(st.session_state["entered_counts"])
+        col1, col2, col3 = st.columns([4, 5, 4])
+        with col2:
+            st.write(st.session_state["count_data"])
+            st.write(f"{st.session_state['count_data'].shape}")
 
         target_col = "Target"
         prediction_col = "Prediction"
@@ -310,7 +330,8 @@ if st.session_state["step"] >= 2:
             st.write(f"{df.shape} (Showing first 5 rows)")
 
     else:
-        st.session_state["entered_counts"].to_csv(data_store_path)
+        predictions_are_probabilities = False
+        st.session_state["count_data"].to_csv(data_store_path)
 
     # Check the number of classes
     num_classes = len(st.session_state["classes"])
@@ -332,13 +353,14 @@ if st.session_state["step"] >= 2:
     # design_ready tells us whether to proceed or wait
     # for user to fix issues
     if st.session_state["step"] >= 3 and design_ready:
-        DownloadHeader.header_and_json_download(
-            header="Confusion Matrix Plot",
+        DownloadHeader.centered_json_download(
             data=design_settings,
             file_name="design_settings.json",
             label="Download design settings",
-            help="Download the design settings to allow reusing setttings in future plots.",
+            help="Download the design settings to allow reusing settings in future plots.",
         )
+
+        st.markdown("---")
 
         plotting_args = [
             "--data_path",
@@ -369,7 +391,7 @@ if st.session_state["step"] >= 2:
         )
 
         DownloadHeader.header_and_image_download(
-            "The confusion matrix plot", filepath=conf_mat_path
+            "", filepath=conf_mat_path, label="Download Plot"
         )
         col1, col2, col3 = st.columns([2, 8, 2])
         with col2:
@@ -377,84 +399,24 @@ if st.session_state["step"] >= 2:
             st.image(
                 image,
                 caption="Confusion Matrix",
-                # width=500,
-                use_column_width=None,
                 clamp=False,
                 channels="RGB",
                 output_format="auto",
             )
 
-        # evaluation = dplyr.select(
-        #     evaluation,
-        #     "Balanced Accuracy",
-        #     "Accuracy",
-        #     "F1",
-        #     "Sensitivity",
-        #     "Specificity",
-        #     "Pos Pred Value",
-        #     "Neg Pred Value",
-        #     "AUC",
-        #     "Kappa",
-        #     "MCC",
-        # )
-        # evaluation_py = ro.conversion.rpy2py(evaluation)
-        # st.write(evaluation_py)
-
-    # confusion_matrix_py = ro.conversion.rpy2py(confusion_matrix)
-    # st.write(confusion_matrix_py)
-
-    # evaluation = dplyr.select(
-    #     evaluation,
-    #     "Balanced Accuracy",
-    #     "Accuracy",
-    #     "F1",
-    #     "Sensitivity",
-    #     "Specificity",
-    #     "Pos Pred Value",
-    #     "Neg Pred Value",
-    #     "AUC",
-    #     "Kappa",
-    #     "MCC",
-    # )
-    # evaluation_py = ro.conversion.rpy2py(evaluation)
-    # st.write(evaluation_py)
-
-    # temp_dir.cleanup()
-
 else:
     st.write("Please upload data.")
 
+# Spacing
+for _ in range(5):
+    st.write(" ")
 
-#   target_col = "Target",
-#   prediction_col = "Prediction",
-#   counts_col = "N",
-#   class_order = NULL,
-#   add_sums = FALSE,
-#   add_counts = TRUE,
-#   add_normalized = TRUE,
-#   add_row_percentages = TRUE,
-#   add_col_percentages = TRUE,
-#   diag_percentages_only = FALSE,
-#   rm_zero_percentages = TRUE,
-#   rm_zero_text = TRUE,
-#   add_zero_shading = TRUE,
-#   add_arrows = TRUE,
-#   counts_on_top = FALSE,
-#   palette = "Blues",
-#   intensity_by = "counts",
-#   theme_fn = ggplot2::theme_minimal,
-#   place_x_axis_above = TRUE,
-#   rotate_y_text = TRUE,
-#   digits = 1,
-#   font_counts = font(),
-#   font_normalized = font(),
-#   font_row_percentages = font(),
-#   font_col_percentages = font(),
-#   arrow_size = 0.048,
-#   arrow_nudge_from_text = 0.065,
-#   tile_border_color = NA,
-#   tile_border_size = 0.1,
-#   tile_border_linetype = "solid",
-#   sums_settings = sum_tile_settings(),
-#   darkness = 0.8
-# )
+st.markdown("---")
+st.write()
+col1, col2, col3, _ = st.columns([6, 3, 3, 3])
+with col1:
+    st.write("Developed by [Ludvig Renbo Olsen](http://ludvigolsen.dk)")
+with col2:
+    st.markdown("[Report issues](https://github.com/LudvigOlsen/cvms_plot_app/issues)")
+with col3:
+    st.markdown("[Source code](https://github.com/LudvigOlsen/cvms_plot_app/)")

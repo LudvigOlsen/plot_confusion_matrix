@@ -129,3 +129,6 @@ dmypy.json
 .pyre/
 
 .DS_STORE
+test_app.py
+
+test_confusion_matrix.png

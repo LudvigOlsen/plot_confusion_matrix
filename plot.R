@@ -3,6 +3,9 @@ library(optparse)
 library(cvms)
 library(dplyr)
 library(ggplot2)
+library(jsonlite)
+
+dev_mode <- TRUE
 
 option_list <- list(
     make_option(c("--data_path"),
@@ -12,6 +15,10 @@ option_list <- list(
     make_option(c("--out_path"),
         type = "character",
         help = "Path to save confusion matrix plot at."
+    ),
+    make_option(c("--settings_path"),
+        type = "character",
+        help = "Path to get design settings from. Should be a .json file."
     ),
     make_option(c("--data_are_counts"),
         action = "store_true", default = FALSE,
@@ -31,82 +38,39 @@ option_list <- list(
     ),
     make_option(c("--classes"),
         type = "character",
-        help = "Comma-separated class names. Only these classes will be used - in the specified order."
+        help = paste0(
+            "Comma-separated class names. ",
+            "Only these classes will be used - in the specified order."
+        )
     ),
     make_option(c("--prob_of_class"),
         type = "character",
         help = "Name of class that probabilities are of."
-    ),
-    make_option(c("--palette"),
-        type = "character",
-        help = "Color palette."
-    ),
-    make_option(c("--width"),
-        type = "integer",
-        help = "Width of plot in pixels."
-    ),
-    make_option(c("--height"),
-        type = "integer",
-        help = "Height of plot in pixels."
-    ),
-    make_option(c("--dpi"),
-        type = "integer",
-        help = "DPI of plot."
-    ),
-    make_option(c("--add_sums"),
-        action = "store_true", default = FALSE,
-        help = "Wether to add sum tiles."
-    ),
-    make_option(c("--add_counts"),
-        action = "store_true", default = FALSE,
-        help = "Wether to add counts."
-    ),
-    make_option(c("--add_normalized"),
-        action = "store_true", default = FALSE,
-        help = "Wether to add normalized counts (i.e. percentages)."
-    ),
-    make_option(c("--add_row_percentages"),
-        action = "store_true", default = FALSE,
-        help = "Wether to add row percentages."
-    ),
-    make_option(c("--add_col_percentages"),
-        action = "store_true", default = FALSE,
-        help = "Wether to add column percentages."
-    ),
-    make_option(c("--add_zero_percentages"),
-        action = "store_true", default = FALSE,
-        help = "Wether to add percentages to zero-tiles."
-    ),
-    make_option(c("--add_zero_text"),
-        action = "store_true", default = FALSE,
-        help = "Wether to add text to zero-tiles."
-    ),
-    make_option(c("--add_zero_shading"),
-        action = "store_true", default = FALSE,
-        help = "Wether to add shading to zero-tiles."
-    ),
-    make_option(c("--add_arrows"),
-        action = "store_true", default = FALSE,
-        help = "Wether to add arrows to row/sum percentages. Requires additional packages."
-    ),
-    make_option(c("--counts_on_top"),
-        action = "store_true", default = FALSE,
-        help = "Wether to have the counts on top and normalized counts below."
-    ),
-    make_option(c("--diag_percentages_only"),
-        action = "store_true", default = FALSE,
-        help = "Wether to only show diagonal row/column percentages."
-    ),
-    make_option(c("--digits"),
-        type = "integer",
-        help = "Number of digits to show for percentages."
     )
 )
 
 opt_parser <- OptionParser(option_list = option_list)
 opt <- parse_args(opt_parser)
 
-print(opt)
+design_settings <- tryCatch(
+    {
+        read_json(path = opt$settings_path)
+    },
+    error = function(e) {
+        print(paste0(
+            "Failed to read design settings as a json file ",
+            opt$settings_path
+        ))
+        print(e)
+        stop(e)
+    }
+)
+
+if (isTRUE(dev_mode)) {
+    print("Arguments:")
+    print(opt)
+    print(design_settings)
+}
 
 data_are_counts <- opt$data_are_counts
 
@@ -133,10 +97,20 @@ df <- tryCatch(
         stop(e)
     }
 )
-print(df)
 
 df <- dplyr::as_tibble(df)
-print(df)
+
+if (isTRUE(dev_mode)) {
+    print(df)
+}
+
+if (!target_col %in% colnames(df)){
+    stop("Specified `target_col` not a column in the data.")
+}
+if (!prediction_col %in% colnames(df)){
+    stop("Specified `target_col` not a column in the data.")
+}
+
 df[[target_col]] <- as.character(df[[target_col]])
 
 if (isTRUE(data_are_counts)) {
@@ -158,23 +132,34 @@ if (is.integer(df[[prediction_col]]) || !is.numeric(df[[prediction_col]])) {
     )
 }
 
-
 if (!is.null(opt$classes)) {
     classes <- as.character(
         unlist(strsplit(opt$classes, "[,:]")),
         recursive = TRUE
     )
+    if (length(setdiff(classes, all_present_classes)) > 0) {
+        stop("One or more specified classes are not in the data set.")
+    }
 } else {
     classes <- all_present_classes
 }
-print(paste0("Selected Classes: ", paste0(classes, collapse = ", ")))
+
+if (isTRUE(dev_mode)) {
+    print(paste0("Selected Classes: ", paste0(classes, collapse = ", ")))
+}
 
 if (!isTRUE(data_are_counts)) {
     # We remove the unwanted classes from the confusion matrix
     # (easier - possibly slower in edge cases)
-    family <- ifelse(length(all_present_classes) == 2, "binomial", "multinomial")
+    family <- ifelse(
+        length(all_present_classes) == 2,
+        "binomial",
+        "multinomial"
+    )
 
-    # TODO : use prob_of_class to ensure probabilities are interpreted correctly!!
+    # TODO : use prob_of_class to ensure probabilities
+    #        are interpreted correctly!!
+    # TODO : Set / calculate threshold
     # Might need to invert them to get it to work!
     evaluation <- tryCatch(
         {
@@ -182,7 +167,7 @@ if (!isTRUE(data_are_counts)) {
                 data = df,
                 target_col = target_col,
                 prediction_cols = prediction_col,
-                type = family,
+                type = family
             )
         },
         error = function(e) {
@@ -209,25 +194,111 @@ confusion_matrix <- dplyr::filter(
     Target %in% classes
 )
 
+# Plotting settings
+
+# Sum tiles
+sums_settings <- sum_tile_settings()
+if (isTRUE(design_settings$show_sums)) {
+    sums_settings <- sum_tile_settings(
+        palette = design_settings$sum_tile_palette,
+        label = design_settings$sum_tile_label
+    )
+}
+
+build_fontface <- function(bold, italic) {
+    dplyr::case_when(
+        isTRUE(bold) && isTRUE(italic) ~ "bold.italic",
+        isTRUE(bold) ~ "bold",
+        isTRUE(italic) ~ "italic",
+        TRUE ~ "plain"
+    )
+}
+
+top_font_args <- list(
+    "size" = design_settings$font_top_size,
+    "color" = design_settings$font_top_color,
+    "fontface" = build_fontface(
+        design_settings$font_top_bold,
+        design_settings$font_top_italic
+    ),
+    "alpha" = design_settings$font_top_alpha
+)
+
+bottom_font_args <- list(
+    "size" = design_settings$font_bottom_size,
+    "color" = design_settings$font_bottom_color,
+    "fontface" = build_fontface(
+        design_settings$font_bottom_bold,
+        design_settings$font_bottom_italic
+    ),
+    "alpha" = design_settings$font_bottom_alpha
+)
+
+percentages_font_args <- list(
+    "size" = design_settings$font_percentage_size,
+    "color" = design_settings$font_percentage_color,
+    "fontface" = build_fontface(
+        design_settings$font_percentage_bold,
+        design_settings$font_percentage_italic
+    ),
+    "alpha" = design_settings$font_percentage_alpha,
+    "prefix" = design_settings$font_percentage_prefix,
+    "suffix" = design_settings$font_percentage_suffix
+)
+
+normalized_font_args <- list(
+    "prefix" = design_settings$font_normalized_prefix,
+    "suffix" = design_settings$font_normalized_suffix
+)
+
+counts_font_args <- list(
+    "prefix" = design_settings$font_counts_prefix,
+    "suffix" = design_settings$font_counts_suffix
+)
+
+
+if (isTRUE(design_settings$counts_on_top) ||
+    !isTRUE(design_settings$show_normalized)) {
+    # Counts on top!
+    counts_font_args <- c(
+        counts_font_args, top_font_args
+    )
+    normalized_font_args <- c(
+        normalized_font_args, bottom_font_args
+    )
+} else {
+    normalized_font_args <- c(
+        normalized_font_args, top_font_args
+    )
+    counts_font_args <- c(
+        counts_font_args, bottom_font_args
+    )
+}
+
 
 confusion_matrix_plot <- tryCatch(
     {
         cvms::plot_confusion_matrix(
             confusion_matrix,
             class_order = classes,
-            add_sums = opt$add_sums,
-            add_counts = opt$add_counts,
-            add_normalized = opt$add_normalized,
-            add_row_percentages = opt$add_row_percentages,
-            add_col_percentages = opt$add_col_percentages,
-            rm_zero_percentages = !opt$add_zero_percentages,
-            rm_zero_text = !opt$add_zero_text,
-            add_zero_shading = opt$add_zero_shading,
-            add_arrows = opt$add_arrows,
-            counts_on_top = opt$counts_on_top,
-            diag_percentages_only = opt$diag_percentages_only,
-            digits = as.integer(opt$digits),
-            palette = opt$palette
+            add_sums = design_settings$show_sums,
+            add_counts = design_settings$show_counts,
+            add_normalized = design_settings$show_normalized,
+            add_row_percentages = design_settings$show_row_percentages,
+            add_col_percentages = design_settings$show_col_percentages,
+            rm_zero_percentages = !design_settings$show_zero_percentages,
+            rm_zero_text = !design_settings$show_zero_text,
+            add_zero_shading = design_settings$show_zero_shading,
+            add_arrows = design_settings$show_arrows,
+            counts_on_top = design_settings$counts_on_top,
+            diag_percentages_only = design_settings$diag_percentages_only,
+            digits = as.integer(design_settings$num_digits),
+            palette = design_settings$palette,
+            sums_settings = sums_settings,
+            font_counts = do.call("font", counts_font_args),
+            font_normalized = do.call("font", normalized_font_args),
+            font_row_percentages = do.call("font", percentages_font_args),
+            font_col_percentages = do.call("font", percentages_font_args)
         )
     },
     error = function(e) {
@@ -242,9 +313,9 @@ tryCatch(
     {
         ggplot2::ggsave(
             opt$out_path,
-            width = opt$width,
-            height = opt$height,
-            dpi = opt$dpi,
+            width = design_settings$width,
+            height = design_settings$height,
+            dpi = design_settings$dpi,
             units = "px"
         )
     },
