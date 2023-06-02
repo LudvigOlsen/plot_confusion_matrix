@@ -55,6 +55,10 @@ def intro_text():
             "--> Press **Generate plot**.\n\n"
         )
     st.markdown("""---""")
+    st.markdown(
+        "This release is a **beta** version. Report errors or suggestions "
+        "on [GitHub](https://github.com/LudvigOlsen/cvms_plot_app/issues)."
+    )
     st.write(
         "The plot is created with the [**cvms**](https://github.com/LudvigOlsen/cvms) R package "
         f"(v/{get_cvms_version()}, LR Olsen & HB Zachariae, 2019)."
@@ -127,8 +131,13 @@ def columns_text():
 def design_text():
     st.subheader("Design your plot")
     st.write("This is where you customize the design of your confusion matrix plot.")
-    st.write(
-        "The width and height settings are usually necessary to adjust as they "
+    st.markdown(
+        "The *width* and *height* settings are usually necessary to adjust as they "
         "change the relative size of the elements. Try adjusting 100px at a "
         "time for a start."
+    )
+    st.write(
+        "If you have previously saved your preferred design settings, "
+        "you can start by uploading the json file. "
+        "Otherwise, get designing!"
     )
