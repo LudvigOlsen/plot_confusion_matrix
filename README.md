@@ -1,8 +1,6 @@
 ---
 title: plot_confusion_matrix
-sdk: streamlit
-python_version: 3.11
-sdk_version: 1.19.0
+sdk: docker
 app_file: app.py
 pinned: true
 ---
