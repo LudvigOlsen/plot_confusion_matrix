@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python=3.11
-  - streamlit=1.22.0
+  - streamlit>=1.22.0
   - PIL
   - pandas
   - lazyeval
