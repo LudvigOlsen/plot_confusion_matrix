@@ -21,7 +21,6 @@ RUN python -c "import streamlit; print('streamlit: ', streamlit.__version__)"
 COPY . .
 
 # The code to run when container is started:
-# server.address 0.0.0.0 ?
 
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "plt_env", "streamlit", "run", "app.py", "--server.port", "7860"] 
+ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "plt_env", "streamlit", "run", "app.py", "--server.port", "7860", "--server.address", "0.0.0.0"] 
 
