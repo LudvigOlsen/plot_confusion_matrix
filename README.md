@@ -4,8 +4,8 @@ sdk: docker
 app_file: app.py
 pinned: true
 emoji: 🍀
-colorFrom: fe7120
-colorTo: 8511a5
+colorFrom: orange
+colorTo: purple
 ---
 
 # Plot Confusion Matrix Streamlit Application
