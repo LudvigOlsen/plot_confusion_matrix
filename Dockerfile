@@ -12,12 +12,11 @@ RUN conda env create -f environment.yml
 # Make RUN commands use the new environment:
 SHELL ["conda", "run", "-n", "plt_env", "/bin/bash", "-c"]
 
-RUN pip install pil, lazyeval, utipy
+RUN pip install streamlit==1.22 Pillow lazyeval pandas
 
 # Demonstrate the environment is activated:
 RUN echo "Make sure streamlit is installed:"
 RUN python -c "import streamlit; print('streamlit: ', streamlit.__version__)"
-
 
 COPY . .
 
