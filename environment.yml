@@ -4,10 +4,7 @@ channels:
 dependencies:
   - python=3.11
   - streamlit>=1.22.0
-  - utipy
-  - PIL
   - pandas
-  - lazyeval
   - r-cvms
   - r-dplyr
   - r-ggplot2
