@@ -42,10 +42,6 @@ option_list <- list(
             "Comma-separated class names. ",
             "Only these classes will be used - in the specified order."
         )
-    ),
-    make_option(c("--prob_of_class"),
-        type = "character",
-        help = "Name of class that probabilities are of."
     )
 )
 
@@ -104,10 +100,10 @@ if (isTRUE(dev_mode)) {
     print(df)
 }
 
-if (!target_col %in% colnames(df)){
+if (!target_col %in% colnames(df)) {
     stop("Specified `target_col` not a column in the data.")
 }
-if (!prediction_col %in% colnames(df)){
+if (!prediction_col %in% colnames(df)) {
     stop("Specified `target_col` not a column in the data.")
 }
 
@@ -157,10 +153,6 @@ if (!isTRUE(data_are_counts)) {
         "multinomial"
     )
 
-    # TODO : use prob_of_class to ensure probabilities
-    #        are interpreted correctly!!
-    # TODO : Set / calculate threshold
-    # Might need to invert them to get it to work!
     evaluation <- tryCatch(
         {
             cvms::evaluate(
@@ -320,7 +312,29 @@ tryCatch(
         )
     },
     error = function(e) {
-        print(paste0("Failed to ggsave plot to: ", opt$out_path))
+        print(paste0("png: Failed to ggsave plot to: ", opt$out_path))
+        print(e)
+        stop(e)
+    }
+)
+
+# Create a jpg version as well
+tryCatch(
+    {
+        ggplot2::ggsave(
+            paste0(substr(
+                opt$out_path,
+                start = 1,
+                stop = nchar(opt$out_path) - 3
+            ), "jpg"),
+            width = design_settings$width,
+            height = design_settings$height,
+            dpi = design_settings$dpi,
+            units = "px"
+        )
+    },
+    error = function(e) {
+        print(paste0("jpg: Failed to ggsave plot to: ", opt$out_path))
         print(e)
         stop(e)
     }

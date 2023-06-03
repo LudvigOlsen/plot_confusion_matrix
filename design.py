@@ -31,7 +31,6 @@ def _add_select_box(
 
 def design_section(
     num_classes,
-    predictions_are_probabilities,
     design_settings_store_path,
 ):
     output = {}
@@ -80,19 +79,7 @@ def design_section(
                 "of another class is excluded.",
             )
         with col2:
-            prob_of_class = None
-            # Not respected, so disabled for now
-            # if (
-            #     st.session_state["input_type"] == "data"
-            #     and predictions_are_probabilities
-            # ):
-            #     prob_of_class = st.selectbox(
-            #         "Probabilities are of (not working)",
-            #         options=st.session_state["classes"],
-            #         index=1,
-            #     )
-            # else:
-            #     prob_of_class = None
+            pass
 
         # Color palette
         output["palette"] = _add_select_box(
@@ -124,9 +111,11 @@ def design_section(
             )
         with col3:
             output["dpi"] = st.number_input(
-                "DPI (not working)",
+                "DPI (scaling)",
                 value=get_uploaded_setting(key="dpi", default=320, type_=int),
                 step=10,
+                help="While the output file *currently* won't have this DPI, "
+                "the DPI setting affects scaling of elements. ",
             )
 
         st.write(" ")  # Slightly bigger gap between the two sections
@@ -469,8 +458,11 @@ def design_section(
                     "the sum tiles under **Tiles** >> *Sum tile settings*."
                 )
                 design_ready = False
+            if len(selected_classes) < 2:
+                st.error("At least 2 classes must be selected.")
+                design_ready = False
 
-    return output, design_ready, selected_classes, prob_of_class
+    return output, design_ready, selected_classes
 
 
 # defaults: dict,

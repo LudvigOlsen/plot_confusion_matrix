@@ -12,7 +12,7 @@ from pandas.api.types import is_float_dtype
 from itertools import combinations
 from collections import OrderedDict
 
-from utils import call_subprocess, clean_string_for_non_alphanumerics
+from utils import call_subprocess, clean_string_for_non_alphanumerics, clean_str_column
 from data import read_data, read_data_cached, DownloadHeader, generate_data
 from design import design_section
 from text_sections import (
@@ -37,8 +37,6 @@ st.markdown(
 
 
 # Create temporary directory
-
-
 @st.cache_resource
 def set_tmp_dir():
     """
@@ -157,12 +155,19 @@ elif input_choice == "Upload counts":
 
             if st.form_submit_button(label="Set columns"):
                 st.session_state["step"] = 2
-                st.session_state["classes"] = sorted(
-                    [
-                        str(c)
-                        for c in st.session_state["count_data"][target_col].unique()
-                    ]
-                )
+
+        if st.session_state["step"] >= 2:
+            print(st.session_state["count_data"])
+            # Ensure targets and predictions are clean strings
+            st.session_state["count_data"][target_col] = clean_str_column(
+                st.session_state["count_data"][target_col]
+            )
+            st.session_state["count_data"][prediction_col] = clean_str_column(
+                st.session_state["count_data"][prediction_col]
+            )
+            st.session_state["classes"] = sorted(
+                [c for c in st.session_state["count_data"][target_col].unique()]
+            )
 
 # Generate data
 elif input_choice == "Generate":
@@ -283,107 +288,119 @@ elif input_choice == "Enter counts":
         n_col = "N"
 
 if st.session_state["step"] >= 2:
+    data_is_ready = False
     if st.session_state["input_type"] == "data":
         # Remove unused columns
         df = df.loc[:, [target_col, prediction_col]]
 
-        # Ensure targets are strings
-        df[target_col] = df[target_col].astype(str)
-        df[target_col] = df[target_col].apply(lambda x: x.replace(" ", "_"))
-
-        # Save to tmp directory to allow reading in R script
-        df.to_csv(data_store_path)
-
-        # Extract unique classes
-        st.session_state["classes"] = sorted([str(c) for c in df[target_col].unique()])
-
         predictions_are_probabilities = is_float_dtype(df[prediction_col])
-        if predictions_are_probabilities and len(st.session_state["classes"]) != 2:
+        if predictions_are_probabilities:
             st.error(
-                "Predictions can only be probabilities in binary classification. "
-                f"Got {len(st.session_state['classes'])} classes."
+                "Predictions should be the predicted classes - not probabilities. "
+            )
+            data_is_ready = False
+        else:
+            data_is_ready = True
+
+        if data_is_ready:
+            # Ensure targets and predictions are clean strings
+            df[target_col] = clean_str_column(df[target_col])
+            df[prediction_col] = clean_str_column(df[prediction_col])
+
+            # Save to tmp directory to allow reading in R script
+            df.to_csv(data_store_path)
+
+            # Extract unique classes
+            st.session_state["classes"] = sorted(
+                [str(c) for c in df[target_col].unique()]
             )
 
-        st.subheader("The Data")
-        col1, col2, col3 = st.columns([2, 2, 2])
-        with col2:
-            st.write(df.head(5))
-            st.write(f"{df.shape} (Showing first 5 rows)")
+            st.subheader("The Data")
+            col1, col2, col3 = st.columns([2, 2, 2])
+            with col2:
+                st.write(df.head(5))
+                st.write(f"{df.shape} (Showing first 5 rows)")
 
     else:
-        predictions_are_probabilities = False
         st.session_state["count_data"].to_csv(data_store_path)
+        data_is_ready = True
 
-    # Check the number of classes
-    num_classes = len(st.session_state["classes"])
-    if num_classes < 2:
-        # TODO Handle better than throwing error?
-        raise ValueError(
-            "Uploaded data must contain 2 or more classes in `Targets column`. "
-            f"Got {num_classes} target classes."
-        )
-
-    # Section for specifying design settings
-
-    design_settings, design_ready, selected_classes, prob_of_class = design_section(
-        num_classes=num_classes,
-        predictions_are_probabilities=predictions_are_probabilities,
-        design_settings_store_path=design_settings_store_path,
-    )
-
-    # design_ready tells us whether to proceed or wait
-    # for user to fix issues
-    if st.session_state["step"] >= 3 and design_ready:
-        DownloadHeader.centered_json_download(
-            data=design_settings,
-            file_name="design_settings.json",
-            label="Download design settings",
-            help="Download the design settings to allow reusing settings in future plots.",
-        )
-
-        st.markdown("---")
-
-        plotting_args = [
-            "--data_path",
-            f"'{data_store_path}'",
-            "--out_path",
-            f"'{conf_mat_path}'",
-            "--settings_path",
-            f"'{design_settings_store_path}'",
-            "--target_col",
-            f"'{target_col}'",
-            "--prediction_col",
-            f"'{prediction_col}'",
-            "--classes",
-            f"{','.join(selected_classes)}",
-        ]
-
-        if st.session_state["input_type"] == "counts":
-            # The input data are counts
-            plotting_args += ["--n_col", f"{n_col}", "--data_are_counts"]
-
-        plotting_args = " ".join(plotting_args)
-
-        call_subprocess(
-            f"Rscript plot.R {plotting_args}",
-            message="Plotting script",
-            return_output=True,
-            encoding="UTF-8",
-        )
-
-        DownloadHeader.header_and_image_download(
-            "", filepath=conf_mat_path, label="Download Plot"
-        )
-        col1, col2, col3 = st.columns([2, 8, 2])
-        with col2:
-            image = Image.open(conf_mat_path)
-            st.image(
-                image,
-                caption="Confusion Matrix",
-                clamp=False,
-                channels="RGB",
-                output_format="auto",
+    if data_is_ready:
+        # Check the number of classes
+        num_classes = len(st.session_state["classes"])
+        if num_classes < 2:
+            # TODO Handle better than throwing error?
+            raise ValueError(
+                "Uploaded data must contain 2 or more classes in `Targets column`. "
+                f"Got {num_classes} target classes."
             )
+
+        # Section for specifying design settings
+
+        design_settings, design_ready, selected_classes = design_section(
+            num_classes=num_classes,
+            design_settings_store_path=design_settings_store_path,
+        )
+
+        # design_ready tells us whether to proceed or wait
+        # for user to fix issues
+        if st.session_state["step"] >= 3 and design_ready:
+            DownloadHeader.centered_json_download(
+                data=design_settings,
+                file_name="design_settings.json",
+                label="Download design settings",
+                help="Download the design settings to allow reusing settings in future plots.",
+            )
+
+            st.markdown("---")
+
+            selected_classes_string = ",".join([f"'{c}'" for c in selected_classes])
+
+            plotting_args = [
+                "--data_path",
+                f"'{data_store_path}'",
+                "--out_path",
+                f"'{conf_mat_path}'",
+                "--settings_path",
+                f"'{design_settings_store_path}'",
+                "--target_col",
+                f"'{target_col}'",
+                "--prediction_col",
+                f"'{prediction_col}'",
+                "--classes",
+                f"{selected_classes_string}",
+            ]
+
+            if st.session_state["input_type"] == "counts":
+                # The input data are counts
+                plotting_args += ["--n_col", f"{n_col}", "--data_are_counts"]
+
+            plotting_args = " ".join(plotting_args)
+
+            call_subprocess(
+                f"Rscript plot.R {plotting_args}",
+                message="Plotting script",
+                return_output=True,
+                encoding="UTF-8",
+            )
+
+            DownloadHeader.header_and_image_download(
+                "", filepath=conf_mat_path, label="Download plot"
+            )
+
+            col1, col2, col3 = st.columns([2, 8, 2])
+            with col2:
+                st.write(" ")
+                image = Image.open(str(conf_mat_path)[:-3] + "jpg")
+                st.image(
+                    image,
+                    caption="Confusion Matrix",
+                    clamp=False,
+                    channels="RGB",
+                    output_format="auto",
+                )
+                st.write(" ")
+                st.write("Note: The downloadable file has a transparent background.")
 
 else:
     st.write("Please upload data.")

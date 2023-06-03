@@ -3,26 +3,19 @@ title: plot_confusion_matrix
 sdk: docker
 app_file: app.py
 pinned: true
+emoji: 🍀
+colorFrom: fe7120
+colorTo: 8511a5
 ---
 
-# cvms_plot_app
+# Plot Confusion Matrix Streamlit Application
 
 Streamlit application for plotting a confusion matrix.
 
-emoji: {{emoji}}
-colorFrom: {{colorFrom}}
-colorTo: {{colorTo}}
-
 
 ## TODOs
-
-- IMPORTANT! Allow specifying which class probabilities are of! (See plot prob_of_class)
-- Allow setting threshold - manual, max J, spec/sens
-- Add bg box around confusion matrix plot as text dissappears on dark mode!
-- ggsave does not use dpi??
+- ggsave only uses DPI for scaling? We would expect output files to have the given DPI?
 - Allow svg, pdf?
 - Add full reset button (empty cache on different files) - callback?
-- Handle <2 classes in design box (add st.error)
-- Handle classes with spaces in them?
 - Add option to change zero-tile background (e.g. to black for black backgrounds)
 - Add option to format total-count tile in sum tiles
