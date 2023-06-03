@@ -4,14 +4,14 @@ WORKDIR /code
 
 # Create the environment:
 COPY ./environment.yml /code/environment.yml
-RUN conda env create -f environment.yml
+RUN conda env create -f environment.yml --yes
 
 # Make RUN commands use the new environment:
 SHELL ["conda", "run", "-n", "plt_env", "/bin/bash", "-c"]
 
 # Demonstrate the environment is activated:
-RUN echo "Make sure flask is installed:"
-RUN python -c "import flask"
+RUN echo "Make sure utipy is installed:"
+RUN python -c "import utipy"
 
 COPY . .
 
