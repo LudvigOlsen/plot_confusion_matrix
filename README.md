@@ -1,5 +1,5 @@
 ---
-title: plot_confusion_matrix
+title: Plot Confusion Matrix
 sdk: docker
 app_file: app.py
 pinned: true
