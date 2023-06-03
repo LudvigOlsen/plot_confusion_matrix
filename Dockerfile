@@ -4,7 +4,7 @@ WORKDIR /code
 
 # Create the environment:
 COPY ./environment.yml /code/environment.yml
-RUN conda env create -f environment.yml --yes
+RUN conda create -f -y environment.yml
 
 # Make RUN commands use the new environment:
 SHELL ["conda", "run", "-n", "plt_env", "/bin/bash", "-c"]
