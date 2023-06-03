@@ -1,7 +1,5 @@
-import pathlib
 from typing import List, Callable, Any, Tuple
 import json
-import numpy as np
 import streamlit as st
 
 from text_sections import (

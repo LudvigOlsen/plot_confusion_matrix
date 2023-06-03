@@ -1,5 +1,5 @@
 import subprocess
-import re, string
+import re
 
 
 def call_subprocess(call_, message, return_output=False, encoding="UTF-8"):

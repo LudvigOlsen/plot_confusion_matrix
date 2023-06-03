@@ -1,0 +1,19 @@
+name: plt_env
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - streamlit=1.19.0
+  - PIL
+  - pandas
+  - lazyeval
+  - r-cvms
+  - r-dplyr
+  - r-ggplot2
+  - r-ggimage
+  - r-rsvg
+  - r-optparse
+  - r-ggnewscale
+  - r-stringr
+  - r-jsonlite
+  
