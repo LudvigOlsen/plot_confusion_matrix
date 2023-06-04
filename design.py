@@ -68,7 +68,7 @@ def design_section(
         return default
 
     with st.form(key="settings_form"):
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns([4, 2, 2])
         with col1:
             selected_classes = st.multiselect(
                 "Select classes (min=2, order is respected)",
@@ -78,7 +78,15 @@ def design_section(
                 "Any observation with either a target or prediction "
                 "of another class is excluded.",
             )
+            # TODO: Once the arrow bug in cvms is fixed, enable reversing!
+            # Reverse by default
+            # selected_classes.reverse()
         with col2:
+            # st.write(" ")
+            # st.write(" ")
+            # reverse_class_order = st.checkbox(
+            #     "Reverse order", value=False, help="Reverse the order of the classes."
+            # )
             pass
 
         # Color palette
@@ -159,7 +167,7 @@ def design_section(
                     ),
                 )
                 output["counts_on_top"] = st.checkbox(
-                    "Counts on top (not working)",
+                    "Counts on top",
                     value=get_uploaded_setting(
                         key="counts_on_top", default=False, type_=bool
                     ),
@@ -446,6 +454,8 @@ def design_section(
                 # Save settings as json
                 with open(design_settings_store_path, "w") as f:
                     json.dump(output, f)
+            # if reverse_class_order:
+            #     selected_classes.reverse()
 
         design_ready = False
         if st.session_state["step"] >= 3:
