@@ -373,7 +373,8 @@ tryCatch(
             width = design_settings$width,
             height = design_settings$height,
             dpi = design_settings$dpi,
-            units = "px"
+            units = "px",
+            bg = "white"
         )
     },
     error = function(e) {
