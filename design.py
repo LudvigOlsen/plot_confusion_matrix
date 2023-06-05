@@ -78,16 +78,14 @@ def design_section(
                 "Any observation with either a target or prediction "
                 "of another class is excluded.",
             )
-            # TODO: Once the arrow bug in cvms is fixed, enable reversing!
             # Reverse by default
-            # selected_classes.reverse()
+            selected_classes.reverse()
         with col2:
-            # st.write(" ")
-            # st.write(" ")
-            # reverse_class_order = st.checkbox(
-            #     "Reverse order", value=False, help="Reverse the order of the classes."
-            # )
-            pass
+            st.write(" ")
+            st.write(" ")
+            reverse_class_order = st.checkbox(
+                "Reverse order", value=False, help="Reverse the order of the classes."
+            )
 
         # Color palette
         output["palette"] = _add_select_box(
@@ -150,6 +148,45 @@ def design_section(
 
         st.markdown("""---""")
         st.markdown("**Advanced**:")
+
+        with st.expander("Labels"):
+            col1, col2 = st.columns(2)
+            with col1:
+                output["x_label"] = st.text_input(
+                    "x-axis",
+                    value=get_uploaded_setting(
+                        key="x_label", default="True Class", type_=str
+                    ),
+                )
+            with col2:
+                output["y_label"] = st.text_input(
+                    "y-axis",
+                    value=get_uploaded_setting(
+                        key="y_label", default="Predicted Class", type_=str
+                    ),
+                )
+
+            st.markdown("---")
+            col1, col2 = st.columns(2)
+            with col1:
+                output["title_label"] = st.text_input(
+                    "Title",
+                    value=get_uploaded_setting(
+                        key="title_label", default="", type_=str
+                    ),
+                )
+            with col2:
+                output["caption_label"] = st.text_input(
+                    "Caption",
+                    value=get_uploaded_setting(
+                        key="caption_label", default="", type_=str
+                    ),
+                )
+            st.info(
+                "Note: When adding a title or caption, "
+                "you may need to adjust the height and "
+                "width of the plot as well."
+            )
 
         with st.expander("Elements"):
             col1, col2 = st.columns(2)
@@ -454,8 +491,10 @@ def design_section(
                 # Save settings as json
                 with open(design_settings_store_path, "w") as f:
                     json.dump(output, f)
-            # if reverse_class_order:
-            #     selected_classes.reverse()
+            if not output["place_x_axis_above"]:
+                selected_classes.reverse()
+            if reverse_class_order:
+                selected_classes.reverse()
 
         design_ready = False
         if st.session_state["step"] >= 3:

@@ -267,6 +267,16 @@ if (isTRUE(design_settings$counts_on_top) ||
     )
 }
 
+tile_border_color <- NA
+if (isTRUE(design_settings$show_tile_border)) {
+    tile_border_color <- design_settings$tile_border_color
+}
+
+intensity_by <- ifelse(
+    tolower(design_settings$intensity_by) == "counts",
+    "counts",
+    "normalized"
+)
 
 confusion_matrix_plot <- tryCatch(
     {
@@ -282,7 +292,13 @@ confusion_matrix_plot <- tryCatch(
             rm_zero_text = !design_settings$show_zero_text,
             add_zero_shading = design_settings$show_zero_shading,
             add_arrows = design_settings$show_arrows,
+            arrow_size = design_settings$arrow_size,
+            arrow_nudge_from_text = design_settings$arrow_nudge_from_text,
+            intensity_by = intensity_by,
+            darkness = design_settings$darkness,
             counts_on_top = design_settings$counts_on_top,
+            place_x_axis_above = design_settings$place_x_axis_above,
+            rotate_y_text = design_settings$rotate_y_text,
             diag_percentages_only = design_settings$diag_percentages_only,
             digits = as.integer(design_settings$num_digits),
             palette = design_settings$palette,
@@ -290,7 +306,10 @@ confusion_matrix_plot <- tryCatch(
             font_counts = do.call("font", counts_font_args),
             font_normalized = do.call("font", normalized_font_args),
             font_row_percentages = do.call("font", percentages_font_args),
-            font_col_percentages = do.call("font", percentages_font_args)
+            font_col_percentages = do.call("font", percentages_font_args),
+            tile_border_color = tile_border_color,
+            tile_border_size = design_settings$tile_border_size,
+            tile_border_linetype = design_settings$tile_border_linetype
         )
     },
     error = function(e) {
@@ -300,6 +319,30 @@ confusion_matrix_plot <- tryCatch(
         stop(e)
     }
 )
+
+# Add labels on x and y axes
+confusion_matrix_plot <- confusion_matrix_plot +
+    ggplot2::labs(
+        x = design_settings$x_label,
+        y = design_settings$y_label
+    )
+
+# Add title
+if (nchar(design_settings$title_label) > 0) {
+    confusion_matrix_plot <- confusion_matrix_plot +
+        ggplot2::labs(
+            title = design_settings$title_label
+        )
+}
+
+# Add caption
+if (nchar(design_settings$caption_label) > 0) {
+    confusion_matrix_plot <- confusion_matrix_plot +
+        ggplot2::labs(
+            caption = design_settings$caption_label
+        )
+}
+
 
 tryCatch(
     {

@@ -10,7 +10,6 @@ import streamlit as st  # Import last
 import pandas as pd
 from pandas.api.types import is_float_dtype
 from itertools import combinations
-from collections import OrderedDict
 
 from utils import call_subprocess, clean_string_for_non_alphanumerics, clean_str_column
 from data import read_data, read_data_cached, DownloadHeader, generate_data
@@ -157,7 +156,6 @@ elif input_choice == "Upload counts":
                 st.session_state["step"] = 2
 
         if st.session_state["step"] >= 2:
-            print(st.session_state["count_data"])
             # Ensure targets and predictions are clean strings
             st.session_state["count_data"][target_col] = clean_str_column(
                 st.session_state["count_data"][target_col]
@@ -242,47 +240,43 @@ elif input_choice == "Enter counts":
             st.session_state["count_data"] = pd.DataFrame(
                 all_pairs, columns=["Target", "Prediction"]
             )
+            st.session_state["count_data"]["N"] = 0
 
             st.session_state["step"] = 1
 
     if st.session_state["step"] >= 1:
         with st.form(key="enter_counts_form"):
-            st.write("Fill in the counts for `N(Target, Prediction)` pairs.")
-            count_input_fields = OrderedDict()
+            st.write(
+                "Fill in the counts by pressing each cell in the `N` column and inputting the counts."
+            )
 
-            num_cols = 3
-            cols = st.columns(num_cols)
-            for i, (targ, pred) in enumerate(
-                zip(
-                    st.session_state["count_data"]["Target"],
-                    st.session_state["count_data"]["Prediction"],
-                )
-            ):
-                count_input_fields[f"{targ}____{pred}"] = cols[
-                    i % num_cols
-                ].number_input(f"N({targ}, {pred})", step=1)
+            new_counts = st.data_editor(
+                st.session_state["count_data"],
+                hide_index=True,
+                column_config={
+                    "Target": st.column_config.TextColumn(disabled=True),
+                    "Prediction": st.column_config.TextColumn(disabled=True),
+                    "N": st.column_config.NumberColumn(
+                        disabled=False, min_value=0, step=1
+                    ),
+                },
+            )
 
             if st.form_submit_button(
                 label="Generate data",
             ):
-                st.session_state["count_data"]["N"] = [
-                    int(val) for val in count_input_fields.values()
-                ]
+                st.session_state["count_data"] = new_counts
                 st.session_state["step"] = 2
 
     if st.session_state["step"] >= 2:
         DownloadHeader.header_and_data_download(
-            "Entered counts",
+            "",
             data=st.session_state["count_data"],
             file_name="confusion_matrix_counts.csv",
+            label="Download counts",
             help="Download counts",
-            col_sizes=[10, 2],
+            col_sizes=[10, 3],
         )
-        col1, col2, col3 = st.columns([4, 5, 4])
-        with col2:
-            st.write(st.session_state["count_data"])
-            st.write(f"{st.session_state['count_data'].shape}")
-
         target_col = "Target"
         prediction_col = "Prediction"
         n_col = "N"
@@ -318,7 +312,7 @@ if st.session_state["step"] >= 2:
             st.subheader("The Data")
             col1, col2, col3 = st.columns([2, 2, 2])
             with col2:
-                st.write(df.head(5))
+                st.dataframe(df.head(5), hide_index=True)
                 st.write(f"{df.shape} (Showing first 5 rows)")
 
     else:
