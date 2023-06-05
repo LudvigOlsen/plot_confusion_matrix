@@ -57,7 +57,13 @@ class DownloadHeader:
 
     @staticmethod
     def header_and_data_download(
-        header, data, file_name, col_sizes=[9, 2], key=None, label="Download", help="Download data"
+        header,
+        data,
+        file_name,
+        col_sizes=[9, 2],
+        key=None,
+        label="Download",
+        help="Download data",
     ):
         col1, col2 = st.columns(col_sizes)
         with col1:

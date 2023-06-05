@@ -151,6 +151,11 @@ elif input_choice == "Upload counts":
             n_col = st.selectbox(
                 "Counts column", options=list(st.session_state["count_data"].columns)
             )
+            sub_col = st.selectbox(
+                "Sub column",
+                options=["--"] + list(st.session_state["count_data"].columns),
+                help="Optional! This column will replace the bottom text in the middle of the tiles.",
+            )
 
             if st.form_submit_button(label="Set columns"):
                 st.session_state["step"] = 2
@@ -240,6 +245,7 @@ elif input_choice == "Enter counts":
             st.session_state["count_data"] = pd.DataFrame(
                 all_pairs, columns=["Target", "Prediction"]
             )
+            st.session_state["count_data"]["Sub"] = ""
             st.session_state["count_data"]["N"] = 0
 
             st.session_state["step"] = 1
@@ -247,7 +253,17 @@ elif input_choice == "Enter counts":
     if st.session_state["step"] >= 1:
         with st.form(key="enter_counts_form"):
             st.write(
-                "Fill in the counts by pressing each cell in the `N` column and inputting the counts."
+                "Fill in the counts by pressing each cell in the `N` column and inputting the counts. "
+            )
+            st.markdown(
+                "(**Optional**) If you wish to specify the bottom text in the middle of the tiles, "
+                "you can fill in the `Sub` column.",
+                help="The `sub` column text replaces the bottom text (counts by default). "
+                "The design settings for the replaced element (e.g. counts) are used for this text instead.",
+            )
+            st.info(
+                "Note: Please click outside the cell before "
+                "pressing `Generate data` to register your change."
             )
 
             new_counts = st.data_editor(
@@ -256,6 +272,12 @@ elif input_choice == "Enter counts":
                 column_config={
                     "Target": st.column_config.TextColumn(disabled=True),
                     "Prediction": st.column_config.TextColumn(disabled=True),
+                    "Sub": st.column_config.TextColumn(
+                        help="This text replaces the bottom text (in the middle of the tiles). "
+                        "By default, the counts are replaced. "
+                        "Note that the settings for this text are named "
+                        "by the text element it replaces (e.g. **Fonts**>>*Counts*)."
+                    ),
                     "N": st.column_config.NumberColumn(
                         disabled=False, min_value=0, step=1
                     ),
@@ -280,6 +302,8 @@ elif input_choice == "Enter counts":
         target_col = "Target"
         prediction_col = "Prediction"
         n_col = "N"
+        sub_col = "Sub" if any(st.session_state["count_data"]["Sub"]) else None
+
 
 if st.session_state["step"] >= 2:
     data_is_ready = False
@@ -302,7 +326,7 @@ if st.session_state["step"] >= 2:
             df[prediction_col] = clean_str_column(df[prediction_col])
 
             # Save to tmp directory to allow reading in R script
-            df.to_csv(data_store_path)
+            df.to_csv(data_store_path, index=False)
 
             # Extract unique classes
             st.session_state["classes"] = sorted(
@@ -316,7 +340,10 @@ if st.session_state["step"] >= 2:
                 st.write(f"{df.shape} (Showing first 5 rows)")
 
     else:
-        st.session_state["count_data"].to_csv(data_store_path)
+        count_data_clean = st.session_state["count_data"].copy()
+        if not any(count_data_clean["Sub"]):
+            del count_data_clean["Sub"]
+        count_data_clean.to_csv(data_store_path, index=False)
         data_is_ready = True
 
     if data_is_ready:
@@ -364,6 +391,9 @@ if st.session_state["step"] >= 2:
                 "--classes",
                 f"{selected_classes_string}",
             ]
+
+            if "sub_col" in locals() and sub_col is not None and sub_col != "--":
+                plotting_args += ["--sub_col", f"{sub_col}"]
 
             if st.session_state["input_type"] == "counts":
                 # The input data are counts

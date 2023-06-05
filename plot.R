@@ -36,6 +36,10 @@ option_list <- list(
         type = "character",
         help = "Count column (when `--data_are_counts`)."
     ),
+    make_option(c("--sub_col"),
+        type = "character",
+        help = "Sub column (when `--data_are_counts`)."
+    ),
     make_option(c("--classes"),
         type = "character",
         help = paste0(
@@ -80,6 +84,15 @@ n_col <- NULL
 if (!is.null(opt$n_col)) {
     n_col <- stringr::str_squish(opt$n_col)
     n_col <- stringr::str_replace_all(n_col, " ", ".")
+}
+
+sub_col <- NULL
+if (!is.null(opt$sub_col)) {
+    if (!data_are_counts) {
+        stop("`sub_col` can only be specified when data are counts.")
+    }
+    sub_col <- stringr::str_squish(opt$sub_col)
+    sub_col <- stringr::str_replace_all(sub_col, " ", ".")
 }
 
 # Read and prepare data frame
@@ -282,6 +295,7 @@ confusion_matrix_plot <- tryCatch(
     {
         cvms::plot_confusion_matrix(
             confusion_matrix,
+            sub_col = sub_col,
             class_order = classes,
             add_sums = design_settings$show_sums,
             add_counts = design_settings$show_counts,

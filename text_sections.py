@@ -45,6 +45,12 @@ def get_example_counts():
         {
             "Target": ["cl1", "cl2", "cl1", "cl2"],
             "Prediction": ["cl1", "cl2", "cl2", "cl1"],
+            "Sub*": [
+                "(57/60)",
+                "(46/50)",
+                "(12/15)",
+                "(23/25)",
+            ],
             "N": [12, 10, 3, 5],
         }
     )
@@ -149,12 +155,14 @@ def upload_counts_text():
             "2) A `predicted classes` column. \n\n"
             "3) A `combination count` column for the "
             "combination frequency of 1 and 2. \n\n"
+            "4) (\\***Optionally**) a `sub` column with text "
+            "that replaces the bottom text in the middle of tiles. \n\n"
             "Other columns are currently ignored. "
             "In the next step, you will be asked to select the names of these two columns. "
         )
     with col2:
         st.write("Example of such a file:")
-        st.write(get_example_counts())
+        st.dataframe(get_example_counts(), hide_index=True)
 
 
 def upload_predictions_text():
@@ -171,7 +179,7 @@ def upload_predictions_text():
         )
     with col2:
         st.write("Example of such a file:")
-        st.write(get_example_data())
+        st.dataframe(get_example_data(), hide_index=True)
 
 
 def columns_text():
@@ -184,7 +192,9 @@ def columns_text():
 def design_text():
     st.subheader("Design your plot")
     st.write("This is where you customize the design of your confusion matrix plot.")
-    st.markdown("We suggest you go directly to `Generate plot` to see the starting point. Then go back and tweak to your liking!")
+    st.markdown(
+        "We suggest you go directly to `Generate plot` to see the starting point. Then go back and tweak to your liking!"
+    )
     st.markdown(
         "The *width* and *height* settings are usually necessary to adjust as they "
         "change the relative size of the elements. Try adjusting 100px at a "
