@@ -281,7 +281,14 @@ def design_section(
                     key="intensity_by",
                     label="Intensity based on",
                     default="Counts",
-                    options=["Counts", "Normalized (%)"],
+                    options=[
+                        "Counts",
+                        "Normalized (%)",
+                        "Log Counts",
+                        "Log2 Counts",
+                        "Log10 Counts",
+                        "Arcsinh Counts",
+                    ],
                     get_setting_fn=get_uploaded_setting,
                     type_=str,
                 )

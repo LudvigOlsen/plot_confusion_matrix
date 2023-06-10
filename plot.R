@@ -5,7 +5,7 @@ library(dplyr)
 library(ggplot2)
 library(jsonlite)
 
-dev_mode <- TRUE
+dev_mode <- FALSE
 
 option_list <- list(
     make_option(c("--data_path"),
@@ -285,11 +285,8 @@ if (isTRUE(design_settings$show_tile_border)) {
     tile_border_color <- design_settings$tile_border_color
 }
 
-intensity_by <- ifelse(
-    tolower(design_settings$intensity_by) == "counts",
-    "counts",
-    "normalized"
-)
+intensity_by <- tolower(design_settings$intensity_by)
+if (grepl("normalized", intensity_by)) intensity_by <- "normalized"
 
 confusion_matrix_plot <- tryCatch(
     {

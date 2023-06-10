@@ -132,3 +132,5 @@ dmypy.json
 test_app.py
 
 test_confusion_matrix.png
+
+small_example-kopi.csv
