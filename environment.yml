@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python=3.11
-  - r-cvms>=1.4.0
+  - r-cvms>=1.4.1
   - r-dplyr
   - r-ggplot2
   - r-ggimage
