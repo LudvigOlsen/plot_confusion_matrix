@@ -61,7 +61,7 @@ def input_choice_callback():
     st.session_state["step"] = 0
     st.session_state["input_type"] = None
 
-    to_delete = ["classes", "count_data"]
+    to_delete = ["classes", "count_data", "uploaded_design_settings"]
     for key in to_delete:
         if key in st.session_state:
             st.session_state.pop(key)
@@ -333,8 +333,8 @@ if st.session_state["step"] >= 2:
                 [str(c) for c in df[target_col].unique()]
             )
 
-            st.subheader("The Data")
-            col1, col2, col3 = st.columns([2, 2, 2])
+            st.subheader("The data")
+            col1, col2, col3 = st.columns([3, 2, 3])
             with col2:
                 st.dataframe(df.head(5), hide_index=True)
                 st.write(f"{df.shape} (Showing first 5 rows)")

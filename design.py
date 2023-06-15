@@ -48,12 +48,19 @@ templates = {
     }
 }
 
+template_selections = {}
+
 
 def design_section(
     num_classes,
     design_settings_store_path,
 ):
     output = {}
+
+    def reset_output_callback():
+        output.clear()
+        if "uploaded_design_settings" in st.session_state:
+            del st.session_state["uploaded_design_settings"]
 
     with st.form(key="settings_upload_form"):
         design_text()
@@ -72,7 +79,7 @@ def design_section(
                             channels="RGB",
                             output_format="auto",
                         )
-                st.radio(
+                template_selections[temp_collection_name] = st.radio(
                     "Select template",
                     index=0,
                     options=["--"] + list(temp_collection.keys()),
@@ -86,17 +93,53 @@ def design_section(
                 "Upload design settings", type=["json"]
             )
 
-        # TODO: Allow resetting settings!
-        if st.form_submit_button(label="Apply settings"):
+        if st.form_submit_button(
+            label="Apply settings", on_click=reset_output_callback
+        ):
+            selections = [
+                (temp_coll_name, selection)
+                for temp_coll_name, selection in template_selections.items()
+                if selection != "--"
+            ]
+            if len(selections) > 1:
+                st.warning("More than one template was selected. The first is applied.")
+            template_selected = "--"
+            if selections:
+                selection_temp_coll_name, selection = selections[0]
+                template_selected = selection
+
             if uploaded_settings_path is not None:
-                st.session_state["uploaded_design_settings"] = json.load(uploaded_settings_path)
+                if template_selected != "--":
+                    st.warning(
+                        "When both selecting a template and uploading settings, "
+                        "the uploaded settings are used."
+                    )
+                st.session_state["uploaded_design_settings"] = json.load(
+                    uploaded_settings_path
+                )
+            elif template_selected != "--":
+                with open(
+                    "templates/"
+                    + templates[selection_temp_coll_name][template_selected][
+                        "settings"
+                    ],
+                    "r",
+                ) as jfile:
+                    st.session_state["uploaded_design_settings"] = json.load(jfile)
             else:
                 st.warning(
                     "No settings were uploaded and no templates were selected. Both are *optional*."
                 )
 
+    col1, col2, col1 = st.columns([5, 2.5, 5])
+    with col2:
+        st.button("Reset design", on_click=reset_output_callback)
+
     def get_uploaded_setting(key, default, type_=None, options=None):
-        if "uploaded_design_settings" in st.session_state and key in st.session_state["uploaded_design_settings"]:
+        if (
+            "uploaded_design_settings" in st.session_state
+            and key in st.session_state["uploaded_design_settings"]
+        ):
             out = st.session_state["uploaded_design_settings"][key]
             if type_ is not None:
                 if not isinstance(out, type_):
