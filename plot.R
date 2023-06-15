@@ -288,6 +288,14 @@ if (isTRUE(design_settings$show_tile_border)) {
 intensity_by <- tolower(design_settings$intensity_by)
 if (grepl("normalized", intensity_by)) intensity_by <- "normalized"
 
+palette <- design_settings$palette
+if (isTRUE(design_settings$palette_use_custom)) {
+    palette <- list(
+        "low" = design_settings$palette_custom_low,
+        "high" = design_settings$palette_custom_high
+    )
+}
+
 confusion_matrix_plot <- tryCatch(
     {
         cvms::plot_confusion_matrix(
@@ -312,7 +320,7 @@ confusion_matrix_plot <- tryCatch(
             rotate_y_text = design_settings$rotate_y_text,
             diag_percentages_only = design_settings$diag_percentages_only,
             digits = as.integer(design_settings$num_digits),
-            palette = design_settings$palette,
+            palette = palette,
             sums_settings = sums_settings,
             font_counts = do.call("font", counts_font_args),
             font_normalized = do.call("font", normalized_font_args),

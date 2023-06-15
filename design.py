@@ -14,6 +14,7 @@ def _add_select_box(
     options: List[Any],
     get_setting_fn: Callable,
     type_=str,
+    help=None,
 ):
     """
     Add selectbox with selection of default value from setting function.
@@ -25,7 +26,7 @@ def _add_select_box(
         options=options,
     )
     return st.selectbox(
-        label, options=options, index=options.index(chosen_default), key=key
+        label, options=options, index=options.index(chosen_default), key=key, help=help
     )
 
 
@@ -37,15 +38,20 @@ def design_section(
 
     with st.form(key="settings_upload_form"):
         design_text()
+
+        with st.expander("Templates"):
+            st.write("Yep")
+        # with st.expander("Upload settings"):
         uploaded_settings_path = st.file_uploader(
             "Upload design settings", type=["json"]
         )
+
         # TODO: Allow resetting settings!
         if st.form_submit_button(label="Apply settings"):
             if uploaded_settings_path is not None:
                 uploaded_design_settings = json.load(uploaded_settings_path)
             else:
-                st.warning("No settings were uploaded. Uploading settings is optional.")
+                st.warning("No settings were uploaded and no templates were selected. Both are *optional*.")
 
     def get_uploaded_setting(key, default, type_=None, options=None):
         # NOTE: Must be placed here, to have `uploaded_design_settings` in locals
@@ -88,14 +94,31 @@ def design_section(
             )
 
         # Color palette
-        output["palette"] = _add_select_box(
-            key="palette",
-            label="Color Palette",
-            default="Blues",
-            options=["Blues", "Greens", "Oranges", "Greys", "Purples", "Reds"],
-            get_setting_fn=get_uploaded_setting,
-            type_=str,
-        )
+        col1, col2, col3, col4 = st.columns([4, 4, 2, 2])
+        with col1:
+            output["palette"] = _add_select_box(
+                key="palette",
+                label="Color Palette",
+                default="Blues",
+                options=["Blues", "Greens", "Oranges", "Greys", "Purples", "Reds"],
+                get_setting_fn=get_uploaded_setting,
+                type_=str,
+                help="Color of the tiles. Select a preset color palette or create a custom gradient. ",
+            )
+        with col2:
+            st.write("")
+            st.write(" ")
+            output["palette_use_custom"] = st.checkbox(
+                "Custom gradient",
+                value=False,
+                help="Use a custom gradient for coloring the tiles.",
+            )
+        with col3:
+            output["palette_custom_low"] = st.color_picker("Low color", value="#B1F9E8")
+        with col4:
+            output["palette_custom_high"] = st.color_picker(
+                "High color", value="#239895"
+            )
 
         # Ask for output parameters
         col1, col2, col3 = st.columns(3)
