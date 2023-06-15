@@ -1,9 +1,9 @@
 #!/usr/bin/env Rscript
 library(optparse)
-library(cvms)
-library(dplyr)
-library(ggplot2)
-library(jsonlite)
+suppressWarnings(suppressMessages(library(cvms)))
+suppressWarnings(suppressMessages(library(dplyr)))
+suppressWarnings(suppressMessages(library(ggplot2)))
+suppressWarnings(suppressMessages(library(jsonlite)))
 
 dev_mode <- FALSE
 
