@@ -1,6 +1,7 @@
 from typing import List, Callable, Any, Tuple
 import json
 import streamlit as st
+from PIL import Image
 
 from text_sections import (
     design_text,
@@ -30,6 +31,24 @@ def _add_select_box(
     )
 
 
+templates = {
+    "grey_1": {
+        "Grey 2-class": {
+            "settings": "design_settings.grey_nc2_1.1.json",
+            "image": "grey_nc2_1.1.jpg",
+        },
+        "Grey 3-class": {
+            "settings": "design_settings.grey_nc3_1.1.json",
+            "image": "grey_nc3_1.1.jpg",
+        },
+        "Grey 2-class with sums": {
+            "settings": "design_settings.grey_nc2_sums_1.1.json",
+            "image": "grey_nc2_sums_1.1.jpg",
+        },
+    }
+}
+
+
 def design_section(
     num_classes,
     design_settings_store_path,
@@ -40,24 +59,45 @@ def design_section(
         design_text()
 
         with st.expander("Templates"):
-            st.write("Yep")
-        # with st.expander("Upload settings"):
-        uploaded_settings_path = st.file_uploader(
-            "Upload design settings", type=["json"]
-        )
+            for temp_collection_name, temp_collection in templates.items():
+                cols = st.columns(3)
+                for i, (temp_name, template) in enumerate(temp_collection.items()):
+                    temp_image = Image.open(f"templates/{template['image']}")
+                    # temp_settings =
+                    with cols[i % 3]:
+                        st.image(
+                            temp_image,
+                            # caption="Confusion Matrix",
+                            clamp=False,
+                            channels="RGB",
+                            output_format="auto",
+                        )
+                st.radio(
+                    "Select template",
+                    index=0,
+                    options=["--"] + list(temp_collection.keys()),
+                    horizontal=True,
+                )
+
+                st.markdown("---")
+
+        with st.expander("Upload settings"):
+            uploaded_settings_path = st.file_uploader(
+                "Upload design settings", type=["json"]
+            )
 
         # TODO: Allow resetting settings!
         if st.form_submit_button(label="Apply settings"):
             if uploaded_settings_path is not None:
-                uploaded_design_settings = json.load(uploaded_settings_path)
+                st.session_state["uploaded_design_settings"] = json.load(uploaded_settings_path)
             else:
-                st.warning("No settings were uploaded and no templates were selected. Both are *optional*.")
+                st.warning(
+                    "No settings were uploaded and no templates were selected. Both are *optional*."
+                )
 
     def get_uploaded_setting(key, default, type_=None, options=None):
-        # NOTE: Must be placed here, to have `uploaded_design_settings` in locals
-
-        if "uploaded_design_settings" in locals() and key in uploaded_design_settings:
-            out = uploaded_design_settings[key]
+        if "uploaded_design_settings" in st.session_state and key in st.session_state["uploaded_design_settings"]:
+            out = st.session_state["uploaded_design_settings"][key]
             if type_ is not None:
                 if not isinstance(out, type_):
                     st.warning(
