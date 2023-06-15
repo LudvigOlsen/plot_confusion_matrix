@@ -359,8 +359,8 @@ def design_section(
                     st.slider(
                         "Arrow size",
                         value=get_uploaded_setting(
-                            key="arrow_size", default=0.048 * 10, type_=float
-                        ),
+                            key="arrow_size", default=0.048, type_=float
+                        ) * 10,
                         min_value=0.03 * 10,
                         max_value=0.06 * 10,
                         step=0.001 * 10,
@@ -371,8 +371,8 @@ def design_section(
                     st.slider(
                         "Arrow nudge from text",
                         value=get_uploaded_setting(
-                            key="arrow_nudge_from_text", default=0.065 * 10, type_=float
-                        ),
+                            key="arrow_nudge_from_text", default=0.065, type_=float
+                        ) * 10,
                         min_value=0.00,
                         max_value=0.1 * 10,
                         step=0.001 * 10,
