@@ -193,7 +193,8 @@ def design_text():
     st.subheader("Design your plot")
     st.write("This is where you customize the design of your confusion matrix plot.")
     st.markdown(
-        "We suggest you go directly to `Generate plot` to see the starting point. Then go back and tweak to your liking!"
+        "We suggest you go directly to `Generate plot` to see the starting point. Then go back and tweak to your liking! "
+        "You can also select one of the templates or upload previously saved design settings."
     )
     st.markdown(
         "The *width* and *height* settings are usually necessary to adjust as they "
@@ -201,7 +202,6 @@ def design_text():
         "time for a start."
     )
     st.write(
-        "If you have previously saved your preferred design settings, "
-        "you can start by uploading the json file. "
-        "Otherwise, get designing!"
+        "Get designing!"
     )
+    st.write("")

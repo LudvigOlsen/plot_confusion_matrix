@@ -201,15 +201,6 @@ confusion_matrix <- dplyr::filter(
 
 # Plotting settings
 
-# Sum tiles
-sums_settings <- sum_tile_settings()
-if (isTRUE(design_settings$show_sums)) {
-    sums_settings <- sum_tile_settings(
-        palette = design_settings$sum_tile_palette,
-        label = design_settings$sum_tile_label
-    )
-}
-
 build_fontface <- function(bold, italic) {
     dplyr::case_when(
         isTRUE(bold) && isTRUE(italic) ~ "bold.italic",
@@ -293,6 +284,18 @@ if (isTRUE(design_settings$palette_use_custom)) {
     palette <- list(
         "low" = design_settings$palette_custom_low,
         "high" = design_settings$palette_custom_high
+    )
+}
+
+# Sum tiles
+sums_settings <- sum_tile_settings()
+if (isTRUE(design_settings$show_sums)) {
+    sums_settings <- sum_tile_settings(
+        palette = design_settings$sum_tile_palette,
+        label = design_settings$sum_tile_label,
+        tile_border_color = tile_border_color,
+        tile_border_size = design_settings$tile_border_size,
+        tile_border_linetype = design_settings$tile_border_linetype
     )
 }
 

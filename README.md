@@ -14,6 +14,7 @@ Streamlit application for plotting a confusion matrix.
 
 
 ## TODOs
+- Add option to preview plot in black and white (for printed papers)
 - ggsave only uses DPI for scaling? We would expect output files to have the given DPI?
 - Allow svg, pdf?
 - Add full reset button (empty cache on different files) - callback?

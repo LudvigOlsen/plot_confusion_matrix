@@ -60,6 +60,7 @@ def input_choice_callback():
     """
     st.session_state["step"] = 0
     st.session_state["input_type"] = None
+    st.session_state["num_resets"] = 0
 
     to_delete = ["classes", "count_data", "uploaded_design_settings"]
     for key in to_delete:
@@ -74,6 +75,9 @@ def input_choice_callback():
     if conf_mat_path.exists():
         conf_mat_path.unlink()
 
+    # Allows design settings to show
+    st.session_state["design_reset_mode"] = False
+
 
 # Text
 intro_text()
@@ -84,7 +88,9 @@ if st.session_state.get("step") is None:
     st.session_state["step"] = 0
 
 input_choice = st.radio(
-    label="Input",
+    label="Input Choice",
+    label_visibility="hidden",
+    key="InputChoice",
     options=["Upload predictions", "Upload counts", "Generate", "Enter counts"],
     index=0,
     horizontal=True,
@@ -358,7 +364,7 @@ if st.session_state["step"] >= 2:
 
         # Section for specifying design settings
 
-        design_settings, design_ready, selected_classes = design_section(
+        design_ready, selected_classes = design_section(
             num_classes=num_classes,
             design_settings_store_path=design_settings_store_path,
         )
@@ -367,7 +373,7 @@ if st.session_state["step"] >= 2:
         # for user to fix issues
         if st.session_state["step"] >= 3 and design_ready:
             DownloadHeader.centered_json_download(
-                data=design_settings,
+                data=st.session_state["selected_design_settings"],
                 file_name="design_settings.json",
                 label="Download design settings",
                 help="Download the design settings to allow reusing settings in future plots.",
