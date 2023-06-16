@@ -91,7 +91,7 @@ def select_settings():
                 )
                 _, col2, _ = st.columns([5, 6, 5])
                 with col2:
-                    if st.button("Select", key=temp_name.replace(" ", "_")):
+                    if st.button("Select", key=temp_name.replace(" ", "_"), on_click=reset_output_callback):
                         with open(
                             "template_resources/" + template["settings"],
                             "r",

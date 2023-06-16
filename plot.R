@@ -295,7 +295,10 @@ if (isTRUE(design_settings$show_sums)) {
         label = design_settings$sum_tile_label,
         tile_border_color = tile_border_color,
         tile_border_size = design_settings$tile_border_size,
-        tile_border_linetype = design_settings$tile_border_linetype
+        tile_border_linetype = design_settings$tile_border_linetype,
+        tc_tile_border_color = tile_border_color,
+        tc_tile_border_size = design_settings$tile_border_size,
+        tc_tile_border_linetype = design_settings$tile_border_linetype
     )
 }
 

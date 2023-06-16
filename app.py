@@ -421,10 +421,22 @@ if st.session_state["step"] >= 2:
             col1, col2, col3 = st.columns([2, 8, 2])
             with col2:
                 st.write(" ")
+                st.write(" ")
                 image = Image.open(str(conf_mat_path)[:-3] + "jpg")
                 st.image(
                     image,
                     caption="Confusion Matrix",
+                    clamp=False,
+                    channels="RGB",
+                    output_format="auto",
+                )
+
+                # Convert the image to grayscale
+                st.write(" ")
+                image = image.convert("CMYK").convert("L")
+                st.image(
+                    image,
+                    caption="Greyscale version for assessing colors in print",
                     clamp=False,
                     channels="RGB",
                     output_format="auto",
