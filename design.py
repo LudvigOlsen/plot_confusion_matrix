@@ -2,11 +2,36 @@ from typing import List, Callable, Any, Tuple
 import json
 import streamlit as st
 from PIL import Image
+from streamlit_toggle import st_toggle_switch
+
 
 from text_sections import (
     design_text,
 )
 from templates import get_templates
+
+
+def _add_toggle_vertical(label, key, default, cols=[2, 5]):
+    st.markdown(f"<p style='font-size:0.85em;'>{label}</p>", unsafe_allow_html=True)
+    col1, _ = st.columns(cols)
+    with col1:
+        return st_toggle_switch(
+            " ",
+            default_value=default,
+            key=key,
+            label_after=True,
+            inactive_color="#eb5a53",
+        )
+
+
+def _add_toggle_horizontal(label, key, default):
+    return st_toggle_switch(
+        label=label,
+        default_value=default,
+        key=key,
+        label_after=True,
+        inactive_color="#eb5a53",
+    )
 
 
 def _add_select_box(
@@ -45,7 +70,7 @@ def select_settings():
         st.session_state["num_resets"] += 1
 
     with st.expander("Templates"):
-        col1, col2, _ = st.columns([1, 1, 3])
+        col1, col2, _ = st.columns([1, 1, 2])
         with col1:
             # Find template with num classes closest to
             # the number of classes in the data
@@ -66,9 +91,12 @@ def select_settings():
                 options=[-1] + templates_available_num_classes,
             )
         with col2:
-            st.write(" ")
-            st.write(" ")
-            has_sums = st.checkbox("Sum tiles", value=False)
+            has_sums = _add_toggle_vertical(
+                label="With sum tiles",
+                key="filter_sum_tiles",
+                default=False,
+                cols=[3, 5],
+            )
 
         filtered_templates = {
             temp_name: temp
@@ -91,7 +119,11 @@ def select_settings():
                 )
                 _, col2, _ = st.columns([5, 6, 5])
                 with col2:
-                    if st.button("Select", key=temp_name.replace(" ", "_"), on_click=reset_output_callback):
+                    if st.button(
+                        "Select",
+                        key=temp_name.replace(" ", "_"),
+                        on_click=reset_output_callback,
+                    ):
                         with open(
                             "template_resources/" + template["settings"],
                             "r",
@@ -154,7 +186,7 @@ def design_section(
     st.session_state["form_placeholder"] = st.empty()
     with st.session_state["form_placeholder"].container():
         with st.form(key=f"settings_form_{st.session_state['num_resets']}"):
-            col1, col2, col3 = st.columns([4, 2, 2])
+            col1, col2 = st.columns([4, 4])
             with col1:
                 selected_classes = st.multiselect(
                     "Select classes (min=2, order is respected)",
@@ -167,12 +199,11 @@ def design_section(
                 # Reverse by default
                 selected_classes.reverse()
             with col2:
-                st.write(" ")
-                st.write(" ")
-                reverse_class_order = st.checkbox(
-                    "Reverse order",
-                    value=False,
-                    help="Reverse the order of the classes.",
+                reverse_class_order = _add_toggle_vertical(
+                    label="Reverse class order",
+                    key="reverse_order",
+                    default=False,
+                    cols=[2, 9],
                 )
 
             # Color palette
@@ -197,14 +228,10 @@ def design_section(
                     help="Color of the tiles. Select a preset color palette or create a custom gradient. ",
                 )
             with col2:
-                st.write("")
-                st.write(" ")
                 st.session_state["selected_design_settings"][
                     "palette_use_custom"
-                ] = st.checkbox(
-                    "Custom gradient",
-                    value=False,
-                    help="Use a custom gradient for coloring the tiles.",
+                ] = _add_toggle_vertical(
+                    label="Use custom gradient", key="custom_gradient", default=False
                 )
             with col3:
                 st.session_state["selected_design_settings"][
@@ -251,30 +278,38 @@ def design_section(
             with col1:
                 st.session_state["selected_design_settings"][
                     "show_counts"
-                ] = st.checkbox(
-                    "Show Counts",
-                    value=get_uploaded_setting(
+                ] = _add_toggle_vertical(
+                    label="Show counts",
+                    key="show_counts",
+                    default=get_uploaded_setting(
                         key="show_counts", default=True, type_=bool
                     ),
+                    cols=[2, 5],
                 )
             with col2:
                 st.session_state["selected_design_settings"][
                     "show_normalized"
-                ] = st.checkbox(
-                    "Show Normalized (%)",
-                    value=get_uploaded_setting(
+                ] = _add_toggle_vertical(
+                    label="Show normalized (%)",
+                    key="show_normalized",
+                    default=get_uploaded_setting(
                         key="show_normalized", default=True, type_=bool
                     ),
+                    cols=[2, 5],
                 )
             with col3:
-                st.session_state["selected_design_settings"]["show_sums"] = st.checkbox(
-                    "Show Sum Tiles",
-                    value=get_uploaded_setting(
+                st.session_state["selected_design_settings"][
+                    "show_sums"
+                ] = _add_toggle_vertical(
+                    label="Show sum tiles",
+                    key="show_sum_tiles",
+                    default=get_uploaded_setting(
                         key="show_sums", default=False, type_=bool
                     ),
-                    help="Show extra row and column with the "
-                    "totals for that row/column.",
+                    cols=[2, 5],
                 )
+                # help="Show extra row and column with the "
+                # "totals for that row/column.",
 
             st.markdown("""---""")
             st.markdown("**Advanced**:")
@@ -331,31 +366,37 @@ def design_section(
                 with col1:
                     st.session_state["selected_design_settings"][
                         "rotate_y_text"
-                    ] = st.checkbox(
-                        "Rotate y-axis text",
-                        value=get_uploaded_setting(
+                    ] = _add_toggle_horizontal(
+                        label="Rotate y-axis text",
+                        key="rotate_y_text",
+                        default=get_uploaded_setting(
                             key="rotate_y_text", default=True, type_=bool
                         ),
                     )
+
                     st.session_state["selected_design_settings"][
                         "place_x_axis_above"
-                    ] = st.checkbox(
-                        "Place x-axis on top",
-                        value=get_uploaded_setting(
+                    ] = _add_toggle_horizontal(
+                        label="Place x-axis on top",
+                        default=get_uploaded_setting(
                             key="place_x_axis_above", default=True, type_=bool
                         ),
+                        key="place_x_axis_above",
                     )
                     st.session_state["selected_design_settings"][
                         "counts_on_top"
-                    ] = st.checkbox(
-                        "Counts on top",
-                        value=get_uploaded_setting(
+                    ] = _add_toggle_horizontal(
+                        label="Counts on top",
+                        default=get_uploaded_setting(
                             key="counts_on_top", default=False, type_=bool
                         ),
-                        help="Whether to switch the positions of the counts and normalized counts (%). "
-                        "The counts become the big centralized numbers and the "
-                        "normalized counts go below with a smaller font size.",
+                        key="counts_on_top",
                     )
+                    # Help note:
+                    # "Whether to switch the positions of the counts and normalized counts (%). "
+                    # "The counts become the big centralized numbers and the "
+                    # "normalized counts go below with a smaller font size."
+
                 with col2:
                     st.session_state["selected_design_settings"][
                         "num_digits"
@@ -374,41 +415,45 @@ def design_section(
                     st.write("Row and column percentages:")
                     st.session_state["selected_design_settings"][
                         "show_row_percentages"
-                    ] = st.checkbox(
-                        "Show row percentages",
-                        value=get_uploaded_setting(
+                    ] = _add_toggle_horizontal(
+                        label="Show row percentages",
+                        default=get_uploaded_setting(
                             key="show_row_percentages",
                             default=num_classes < 6,
                             type_=bool,
                         ),
+                        key="show_row_percentages",
                     )
                     st.session_state["selected_design_settings"][
                         "show_col_percentages"
-                    ] = st.checkbox(
-                        "Show column percentages",
-                        value=get_uploaded_setting(
+                    ] = _add_toggle_horizontal(
+                        label="Show column percentages",
+                        default=get_uploaded_setting(
                             key="show_col_percentages",
                             default=num_classes < 6,
                             type_=bool,
                         ),
+                        key="show_col_percentages",
                     )
                     st.session_state["selected_design_settings"][
                         "show_arrows"
-                    ] = st.checkbox(
-                        "Show arrows",
-                        value=get_uploaded_setting(
+                    ] = _add_toggle_horizontal(
+                        label="Show arrows",
+                        default=get_uploaded_setting(
                             key="show_arrows", default=True, type_=bool
                         ),
+                        key="show_arrows",
                     )
                     st.session_state["selected_design_settings"][
                         "diag_percentages_only"
-                    ] = st.checkbox(
-                        "Diagonal row/column percentages only",
-                        value=get_uploaded_setting(
+                    ] = _add_toggle_horizontal(
+                        label="Diagonal percentages only",
+                        default=get_uploaded_setting(
                             key="diag_percentages_only",
                             default=False,
                             type_=bool,
                         ),
+                        key="diag_percentages_only",
                     )
                 with col2:
                     st.session_state["selected_design_settings"]["arrow_size"] = (
@@ -480,11 +525,12 @@ def design_section(
 
                 st.session_state["selected_design_settings"][
                     "show_tile_border"
-                ] = st.checkbox(
-                    "Add tile borders",
-                    value=get_uploaded_setting(
+                ] = _add_toggle_horizontal(
+                    label="Add tile borders",
+                    default=get_uploaded_setting(
                         key="show_tile_border", default=False, type_=bool
                     ),
+                    key="show_tile_border",
                 )
 
                 col1, col2, col3 = st.columns(3)
@@ -582,33 +628,34 @@ def design_section(
                 with col1:
                     st.session_state["selected_design_settings"][
                         "show_zero_shading"
-                    ] = st.checkbox(
-                        "Add shading",
-                        value=get_uploaded_setting(
+                    ] = _add_toggle_vertical(
+                        label="Add shading",
+                        default=get_uploaded_setting(
                             key="show_zero_shading", default=True, type_=bool
                         ),
+                        key="show_zero_shading",
                     )
                 with col2:
                     st.session_state["selected_design_settings"][
                         "show_zero_text"
-                    ] = st.checkbox(
-                        "Show text",
-                        value=get_uploaded_setting(
+                    ] = _add_toggle_vertical(
+                        label="Show main text",
+                        default=get_uploaded_setting(
                             key="show_zero_text", default=False, type_=bool
                         ),
-                        help="Whether to show counts, normalized (%), etc.",
+                        key="show_zero_text",
                     )
                 with col3:
                     st.session_state["selected_design_settings"][
                         "show_zero_percentages"
-                    ] = st.checkbox(
-                        "Show row/column percentages",
-                        value=get_uploaded_setting(
+                    ] = _add_toggle_vertical(
+                        label="Show row/column percentages",
+                        default=get_uploaded_setting(
                             key="show_zero_percentages",
                             default=False,
                             type_=bool,
                         ),
-                        help="Only relevant when row/column percentages are enabled.",
+                        key="show_zero_percentages",
                     )
 
             if True:
@@ -747,15 +794,15 @@ def create_font_settings(
             key=k,
             value=get_setting_fn(key=k, default=d, type_=str),
         ),
-        make_key("bold"): lambda k, d: st.checkbox(
-            "Bold",
+        make_key("bold"): lambda k, d: _add_toggle_horizontal(
+            label="Bold",
             key=k,
-            value=get_setting_fn(key=k, default=d, type_=bool),
+            default=get_setting_fn(key=k, default=d, type_=bool),
         ),
-        make_key("italic"): lambda k, d: st.checkbox(
-            "Italic",
+        make_key("italic"): lambda k, d: _add_toggle_horizontal(
+            label="Italic",
             key=k,
-            value=get_setting_fn(key=k, default=d, type_=bool),
+            default=get_setting_fn(key=k, default=d, type_=bool),
         ),
         make_key("size"): lambda k, d: st.number_input(
             "Size",
