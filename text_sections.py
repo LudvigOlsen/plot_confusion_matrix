@@ -75,7 +75,8 @@ def intro_text():
             "machine learning model's performance on a classification task. "
             "This application enables you to plot a confusion matrix on your own data, "
             "**without a single line of code**. \n\n"
-            "It's designed for high flexibility AND quick results with good default settings.\n\n"
+            "It's designed for high flexibility AND quick results with "
+            "templates and good default settings.\n\n"
         )
     with col2:
         st.image(
@@ -201,7 +202,5 @@ def design_text():
         "change the relative size of the elements. Try adjusting 100px at a "
         "time for a start."
     )
-    st.write(
-        "Get designing!"
-    )
+    st.write("Get designing!")
     st.write("")
