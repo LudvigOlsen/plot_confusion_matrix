@@ -2,36 +2,12 @@ from typing import List, Callable, Any, Tuple
 import json
 import streamlit as st
 from PIL import Image
-from streamlit_toggle import st_toggle_switch
 
-
+from components import add_toggle_horizontal, add_toggle_vertical
 from text_sections import (
     design_text,
 )
 from templates import get_templates
-
-
-def _add_toggle_vertical(label, key, default, cols=[2, 5]):
-    st.markdown(f"<p style='font-size:0.85em;'>{label}</p>", unsafe_allow_html=True)
-    col1, _ = st.columns(cols)
-    with col1:
-        return st_toggle_switch(
-            " ",
-            default_value=default,
-            key=key,
-            label_after=True,
-            inactive_color="#eb5a53",
-        )
-
-
-def _add_toggle_horizontal(label, key, default):
-    return st_toggle_switch(
-        label=label,
-        default_value=default,
-        key=key,
-        label_after=True,
-        inactive_color="#eb5a53",
-    )
 
 
 def _add_select_box(
@@ -91,7 +67,7 @@ def select_settings():
                 options=[-1] + templates_available_num_classes,
             )
         with col2:
-            has_sums = _add_toggle_vertical(
+            has_sums = add_toggle_vertical(
                 label="With sum tiles",
                 key="filter_sum_tiles",
                 default=False,
@@ -199,7 +175,7 @@ def design_section(
                 # Reverse by default
                 selected_classes.reverse()
             with col2:
-                reverse_class_order = _add_toggle_vertical(
+                reverse_class_order = add_toggle_vertical(
                     label="Reverse class order",
                     key="reverse_order",
                     default=False,
@@ -230,7 +206,7 @@ def design_section(
             with col2:
                 st.session_state["selected_design_settings"][
                     "palette_use_custom"
-                ] = _add_toggle_vertical(
+                ] = add_toggle_vertical(
                     label="Use custom gradient", key="custom_gradient", default=False
                 )
             with col3:
@@ -278,7 +254,7 @@ def design_section(
             with col1:
                 st.session_state["selected_design_settings"][
                     "show_counts"
-                ] = _add_toggle_vertical(
+                ] = add_toggle_vertical(
                     label="Show counts",
                     key="show_counts",
                     default=get_uploaded_setting(
@@ -289,7 +265,7 @@ def design_section(
             with col2:
                 st.session_state["selected_design_settings"][
                     "show_normalized"
-                ] = _add_toggle_vertical(
+                ] = add_toggle_vertical(
                     label="Show normalized (%)",
                     key="show_normalized",
                     default=get_uploaded_setting(
@@ -300,7 +276,7 @@ def design_section(
             with col3:
                 st.session_state["selected_design_settings"][
                     "show_sums"
-                ] = _add_toggle_vertical(
+                ] = add_toggle_vertical(
                     label="Show sum tiles",
                     key="show_sum_tiles",
                     default=get_uploaded_setting(
@@ -366,7 +342,7 @@ def design_section(
                 with col1:
                     st.session_state["selected_design_settings"][
                         "rotate_y_text"
-                    ] = _add_toggle_horizontal(
+                    ] = add_toggle_horizontal(
                         label="Rotate y-axis text",
                         key="rotate_y_text",
                         default=get_uploaded_setting(
@@ -376,7 +352,7 @@ def design_section(
 
                     st.session_state["selected_design_settings"][
                         "place_x_axis_above"
-                    ] = _add_toggle_horizontal(
+                    ] = add_toggle_horizontal(
                         label="Place x-axis on top",
                         default=get_uploaded_setting(
                             key="place_x_axis_above", default=True, type_=bool
@@ -385,7 +361,7 @@ def design_section(
                     )
                     st.session_state["selected_design_settings"][
                         "counts_on_top"
-                    ] = _add_toggle_horizontal(
+                    ] = add_toggle_horizontal(
                         label="Counts on top",
                         default=get_uploaded_setting(
                             key="counts_on_top", default=False, type_=bool
@@ -415,7 +391,7 @@ def design_section(
                     st.write("Row and column percentages:")
                     st.session_state["selected_design_settings"][
                         "show_row_percentages"
-                    ] = _add_toggle_horizontal(
+                    ] = add_toggle_horizontal(
                         label="Show row percentages",
                         default=get_uploaded_setting(
                             key="show_row_percentages",
@@ -426,7 +402,7 @@ def design_section(
                     )
                     st.session_state["selected_design_settings"][
                         "show_col_percentages"
-                    ] = _add_toggle_horizontal(
+                    ] = add_toggle_horizontal(
                         label="Show column percentages",
                         default=get_uploaded_setting(
                             key="show_col_percentages",
@@ -437,7 +413,7 @@ def design_section(
                     )
                     st.session_state["selected_design_settings"][
                         "show_arrows"
-                    ] = _add_toggle_horizontal(
+                    ] = add_toggle_horizontal(
                         label="Show arrows",
                         default=get_uploaded_setting(
                             key="show_arrows", default=True, type_=bool
@@ -446,7 +422,7 @@ def design_section(
                     )
                     st.session_state["selected_design_settings"][
                         "diag_percentages_only"
-                    ] = _add_toggle_horizontal(
+                    ] = add_toggle_horizontal(
                         label="Diagonal percentages only",
                         default=get_uploaded_setting(
                             key="diag_percentages_only",
@@ -525,7 +501,7 @@ def design_section(
 
                 st.session_state["selected_design_settings"][
                     "show_tile_border"
-                ] = _add_toggle_horizontal(
+                ] = add_toggle_horizontal(
                     label="Add tile borders",
                     default=get_uploaded_setting(
                         key="show_tile_border", default=False, type_=bool
@@ -628,7 +604,7 @@ def design_section(
                 with col1:
                     st.session_state["selected_design_settings"][
                         "show_zero_shading"
-                    ] = _add_toggle_vertical(
+                    ] = add_toggle_vertical(
                         label="Add shading",
                         default=get_uploaded_setting(
                             key="show_zero_shading", default=True, type_=bool
@@ -638,7 +614,7 @@ def design_section(
                 with col2:
                     st.session_state["selected_design_settings"][
                         "show_zero_text"
-                    ] = _add_toggle_vertical(
+                    ] = add_toggle_vertical(
                         label="Show main text",
                         default=get_uploaded_setting(
                             key="show_zero_text", default=False, type_=bool
@@ -648,7 +624,7 @@ def design_section(
                 with col3:
                     st.session_state["selected_design_settings"][
                         "show_zero_percentages"
-                    ] = _add_toggle_vertical(
+                    ] = add_toggle_vertical(
                         label="Show row/column percentages",
                         default=get_uploaded_setting(
                             key="show_zero_percentages",
@@ -794,12 +770,12 @@ def create_font_settings(
             key=k,
             value=get_setting_fn(key=k, default=d, type_=str),
         ),
-        make_key("bold"): lambda k, d: _add_toggle_horizontal(
+        make_key("bold"): lambda k, d: add_toggle_horizontal(
             label="Bold",
             key=k,
             default=get_setting_fn(key=k, default=d, type_=bool),
         ),
-        make_key("italic"): lambda k, d: _add_toggle_horizontal(
+        make_key("italic"): lambda k, d: add_toggle_horizontal(
             label="Italic",
             key=k,
             default=get_setting_fn(key=k, default=d, type_=bool),

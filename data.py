@@ -4,6 +4,8 @@ import pandas as pd
 import streamlit as st
 from utils import call_subprocess
 
+from components import add_toggle_vertical
+
 
 def read_data(data):
     if data is not None:
@@ -33,23 +35,52 @@ class DownloadHeader:
     """
 
     @staticmethod
-    def header_and_image_download(
-        header, filepath, key=None, label="Download", help="Download plot"
-    ):
-        col1, col2 = st.columns([11, 3])
-        with col1:
-            st.subheader(header)
+    def slider_and_image_download(
+        filepath,
+        slider_label,
+        toggle_label,
+        download_label="Download",
+        slider_min=0.0,
+        slider_max=2.0,
+        slider_value=1.0,
+        slider_step=0.1,
+        slider_help=None,
+        toggle_value=False,
+        toggle_cols=[2, 5],
+        download_help="Download plot",
+        key=None,
+    ) -> int:
+        col1, col2, col3, col4 = st.columns([2, 6, 3, 3])
         with col2:
+            # Image viewing size slider
+            image_col_size = st.slider(
+                slider_label,
+                min_value=slider_min,
+                max_value=slider_max,
+                value=slider_value,
+                step=slider_step,
+                help=slider_help,
+                key=key + "_slider" if key is not None else key,
+            )
+        with col3:
+            toggle_state = add_toggle_vertical(
+                label=toggle_label,
+                key=key + "_toggle" if key is not None else key,
+                default=toggle_value,
+                cols=toggle_cols,
+            )
+        with col4:
             st.write("")
             with open(filepath, "rb") as img:
                 st.download_button(
-                    label=label,
+                    label=download_label,
                     data=img,
                     file_name=pathlib.Path(filepath).name,
                     mime="image/png",
-                    key=key,
-                    help=help,
+                    key=key + "_download" if key is not None else key,
+                    help=download_help,
                 )
+        return image_col_size, toggle_state
 
     @staticmethod
     def _convert_df_to_csv(data, **kwargs):

@@ -2,6 +2,7 @@ import subprocess
 import re
 import streamlit as st
 import json
+from typing import Optional
 
 
 def show_error(msg, action):
@@ -63,3 +64,29 @@ def clean_string_for_non_alphanumerics(s):
 
 def clean_str_column(x):
     return x.astype(str).apply(lambda x: clean_string_for_non_alphanumerics(x))
+
+
+def min_max_scale_list(
+    x: list,
+    new_min: float,
+    new_max: float,
+    old_min: Optional[float] = None,
+    old_max: Optional[float] = None,
+) -> list:
+    """
+    MinMax scaler for lists.
+    Why: Currently we don't require numpy as dependency.
+    """
+    if old_min is None:
+        old_min = min(x)
+    if old_max is None:
+        old_max = max(x)
+
+    diff = old_max - old_min
+
+    # Avoiding zero-division
+    if diff == 0:
+        diff = 1
+
+    x = [(xi - old_min) / diff for xi in x]
+    return [xi * (new_max - new_min) + new_min for xi in x]

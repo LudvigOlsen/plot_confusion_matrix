@@ -11,7 +11,12 @@ import pandas as pd
 from pandas.api.types import is_float_dtype
 from itertools import combinations
 
-from utils import call_subprocess, clean_string_for_non_alphanumerics, clean_str_column
+from utils import (
+    call_subprocess,
+    clean_string_for_non_alphanumerics,
+    clean_str_column,
+    min_max_scale_list,
+)
 from data import read_data, read_data_cached, DownloadHeader, generate_data
 from design import design_section
 from text_sections import (
@@ -414,11 +419,38 @@ if st.session_state["step"] >= 2:
                 encoding="UTF-8",
             )
 
-            DownloadHeader.header_and_image_download(
-                "", filepath=conf_mat_path, label="Download plot"
+            (
+                image_col_size,
+                st.session_state["show_greyscale"],
+            ) = DownloadHeader.slider_and_image_download(
+                filepath=conf_mat_path,
+                download_label="Download plot",
+                slider_label="Zoom",
+                toggle_label="Show greyscale",
+                toggle_value=True,
+                toggle_cols=[10, 1],
+                slider_help="Zoom in/out to better match the size you expect to have in a paper etc. "
+                "This affects the font sizes and will likely lead to adjustments of `height` and `width`.",
+            )
+            st.session_state["image_col_size"] = (
+                min_max_scale_list(
+                    x=[image_col_size],
+                    new_min=2.0,
+                    new_max=8.0,
+                    old_min=0.0,
+                    old_max=1.0,
+                )[0]
+                if image_col_size <= 1
+                else min_max_scale_list(
+                    x=[image_col_size],
+                    new_min=8.0,
+                    new_max=23.0,
+                    old_min=1.0,
+                    old_max=2.0,
+                )[0]
             )
 
-            col1, col2, col3 = st.columns([2, 8, 2])
+            col1, col2, col3 = st.columns([2, st.session_state["image_col_size"], 2])
             with col2:
                 st.write(" ")
                 st.write(" ")
@@ -431,16 +463,17 @@ if st.session_state["step"] >= 2:
                     output_format="auto",
                 )
 
-                # Convert the image to grayscale
-                st.write(" ")
-                image = image.convert("CMYK").convert("L")
-                st.image(
-                    image,
-                    caption="Greyscale version for assessing colors in print",
-                    clamp=False,
-                    channels="RGB",
-                    output_format="auto",
-                )
+                if st.session_state["show_greyscale"]:
+                    # Convert the image to grayscale
+                    st.write(" ")
+                    image = image.convert("CMYK").convert("L")
+                    st.image(
+                        image,
+                        caption="Greyscale version for assessing colors in print",
+                        clamp=False,
+                        channels="RGB",
+                        output_format="auto",
+                    )
                 st.write(" ")
                 st.write("Note: The downloadable file has a transparent background.")
 
