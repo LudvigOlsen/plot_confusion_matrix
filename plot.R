@@ -279,6 +279,14 @@ if (isTRUE(design_settings$show_tile_border)) {
 intensity_by <- tolower(design_settings$intensity_by)
 if (grepl("normalized", intensity_by)) intensity_by <- "normalized"
 
+intensity_lims <- NULL
+if (isTRUE(design_settings$set_intensity_lims)) {
+    intensity_lims <- c(
+        design_settings$intensity_min,
+        design_settings$intensity_max
+    )
+}
+
 palette <- design_settings$palette
 if (isTRUE(design_settings$palette_use_custom)) {
     palette <- list(
@@ -320,6 +328,8 @@ confusion_matrix_plot <- tryCatch(
             arrow_size = design_settings$arrow_size,
             arrow_nudge_from_text = design_settings$arrow_nudge_from_text,
             intensity_by = intensity_by,
+            intensity_lims = intensity_lims,
+            intensity_beyond_lims = design_settings$intensity_beyond_lims,
             darkness = design_settings$darkness,
             counts_on_top = design_settings$counts_on_top,
             place_x_axis_above = design_settings$place_x_axis_above,

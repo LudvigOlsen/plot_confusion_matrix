@@ -497,6 +497,51 @@ def design_section(
                         help="How dark the darkest colors should be, between 0 and 1, where 1 is darkest.",
                     )
 
+                col1, col2, col3, col4 = st.columns([4, 5, 5, 6])
+                with col1:
+                    st.session_state["selected_design_settings"][
+                        "set_intensity_lims"
+                    ] = add_toggle_vertical(
+                        label="Set intensity range",
+                        default=False,
+                        key="set_intensity_lims",
+                        cols=[5, 1],
+                    )
+                with col2:
+                    st.session_state["selected_design_settings"][
+                        "intensity_min"
+                    ] = st.number_input(
+                        "Intensity min.",
+                        value=get_uploaded_setting(
+                            key="intensity_min", default=0.0, type_=float
+                        ),
+                        help="The value to consider the minimum intensity. "
+                        "The values are based on the `Intensity based on` selection.",
+                    )
+                with col3:
+                    st.session_state["selected_design_settings"][
+                        "intensity_max"
+                    ] = st.number_input(
+                        "Intensity max.",
+                        value=get_uploaded_setting(
+                            key="intensity_max", default=0.0, type_=float
+                        ),
+                        help="The value to consider the maximum intensity. "
+                        "The values are based on the `Intensity based on` selection.",
+                    )
+                with col4:
+                    st.session_state["selected_design_settings"][
+                        "intensity_beyond_lims"
+                    ] = _add_select_box(
+                        key="intensity_beyond_lims",
+                        label="Out-of-range values",
+                        default="truncate",
+                        options=["truncate", "grey"],
+                        get_setting_fn=get_uploaded_setting,
+                        type_=str,
+                        help="What to do with counts/percentages outside of the specified intensity range.",
+                    )
+
                 st.markdown("""---""")
 
                 st.session_state["selected_design_settings"][
@@ -745,6 +790,16 @@ def design_section(
                 "for the tiles and sum tiles are identical. "
                 "Please select a different color palette for "
                 "the sum tiles under **Tiles** >> *Sum tile settings*."
+            )
+            design_ready = False
+        if (
+            st.session_state["selected_design_settings"]["set_intensity_lims"]
+            and not st.session_state["selected_design_settings"]["intensity_max"]
+            > st.session_state["selected_design_settings"]["intensity_min"]
+        ):
+            st.error(
+                "When specifying an intensity range, "
+                "the maximum value must be greater than the minimum value."
             )
             design_ready = False
         if len(selected_classes) < 2:
