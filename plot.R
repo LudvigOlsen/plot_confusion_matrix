@@ -298,8 +298,15 @@ if (isTRUE(design_settings$palette_use_custom)) {
 # Sum tiles
 sums_settings <- sum_tile_settings()
 if (isTRUE(design_settings$show_sums)) {
+    sum_tile_palette <- design_settings$sum_tile_palette
+    if (isTRUE(design_settings$sum_tile_palette_use_custom)) {
+        sum_tile_palette <- list(
+            "low" = design_settings$sum_tile_palette_custom_low,
+            "high" = design_settings$sum_tile_palette_custom_high
+        )
+    }
     sums_settings <- sum_tile_settings(
-        palette = design_settings$sum_tile_palette,
+        palette = sum_tile_palette,
         label = design_settings$sum_tile_label,
         tile_border_color = tile_border_color,
         tile_border_size = design_settings$tile_border_size,

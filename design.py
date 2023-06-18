@@ -207,16 +207,36 @@ def design_section(
                 st.session_state["selected_design_settings"][
                     "palette_use_custom"
                 ] = add_toggle_vertical(
-                    label="Use custom gradient", key="custom_gradient", default=False
+                    label="Use custom gradient",
+                    key="custom_gradient",
+                    default=get_uploaded_setting(
+                        key="palette_use_custom",
+                        default=False,
+                        type_=bool,
+                    ),
                 )
             with col3:
                 st.session_state["selected_design_settings"][
                     "palette_custom_low"
-                ] = st.color_picker("Low color", value="#B1F9E8")
+                ] = st.color_picker(
+                    "Low color",
+                    value=get_uploaded_setting(
+                        key="palette_custom_low",
+                        default="#B1F9E8",
+                        type_=str,
+                    ),
+                )
             with col4:
                 st.session_state["selected_design_settings"][
                     "palette_custom_high"
-                ] = st.color_picker("High color", value="#239895")
+                ] = st.color_picker(
+                    "High color",
+                    value=get_uploaded_setting(
+                        key="palette_custom_high",
+                        default="#239895",
+                        type_=str,
+                    ),
+                )
 
             # Ask for output parameters
             col1, col2, col3 = st.columns(3)
@@ -601,7 +621,8 @@ def design_section(
 
                 st.write("Sum tile settings:")
 
-                col1, col2 = st.columns(2)
+                # Color palette
+                col1, col2, col3, col4 = st.columns([4, 4, 2, 2])
                 with col1:
                     st.session_state["selected_design_settings"][
                         "sum_tile_palette"
@@ -620,8 +641,43 @@ def design_section(
                         get_setting_fn=get_uploaded_setting,
                         type_=str,
                     )
-
                 with col2:
+                    st.session_state["selected_design_settings"][
+                        "sum_tile_palette_use_custom"
+                    ] = add_toggle_vertical(
+                        label="Use custom gradient",
+                        key="sum_tile_palette_use_custom",
+                        default=get_uploaded_setting(
+                            key="sum_tile_palette_use_custom", default=False, type_=bool
+                        ),
+                    )
+                with col3:
+                    st.session_state["selected_design_settings"][
+                        "sum_tile_palette_custom_low"
+                    ] = st.color_picker(
+                        "Low color",
+                        key="sum_tile_palette_custom_low",
+                        value=get_uploaded_setting(
+                            key="sum_tile_palette_custom_low",
+                            default="#e9e1fc",
+                            type_=str,
+                        ),
+                    )
+                with col4:
+                    st.session_state["selected_design_settings"][
+                        "sum_tile_palette_custom_high"
+                    ] = st.color_picker(
+                        "High color",
+                        key="sum_tile_palette_custom_high",
+                        value=get_uploaded_setting(
+                            key="sum_tile_palette_custom_high",
+                            default="#BE94E6",
+                            type_=str,
+                        ),
+                    )
+
+                col1, col2 = st.columns(2)
+                with col1:
                     st.session_state["selected_design_settings"][
                         "sum_tile_label"
                     ] = st.text_input(
