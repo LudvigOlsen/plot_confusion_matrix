@@ -69,6 +69,41 @@ def get_templates():
         collection="Greys 1",
     )
 
+    # Turquoise
+    # Greys
+    temps.add(
+        name="Turquoises 2-Class",
+        num_classes=2,
+        sums=False,
+        settings_path="design_settings.turquoise_nc2_1.1.json",
+        image_path="turquoise_nc2_1.1.png",
+        collection="Turquoises 1",
+    )
+    temps.add(
+        name="Turquoises 3-Class",
+        num_classes=3,
+        sums=False,
+        settings_path="design_settings.turquoise_nc3_1.1.json",
+        image_path="turquoise_nc3_1.1.png",
+        collection="Turquoises 1",
+    )
+    temps.add(
+        name="Turquoises 2-Class w/ Sums",
+        num_classes=2,
+        sums=True,
+        settings_path="design_settings.turquoise_nc2_sums_1.1.json",
+        image_path="turquoise_nc2_sums_1.1.png",
+        collection="Turquoises 1",
+    )
+    temps.add(
+        name="Turquoises 3-Class w/ Sums",
+        num_classes=3,
+        sums=True,
+        settings_path="design_settings.turquoise_nc3_sums_1.1.json",
+        image_path="turquoise_nc3_sums_1.1.png",
+        collection="Turquoises 1",
+    )
+
     return temps.get_templates()
 
 
