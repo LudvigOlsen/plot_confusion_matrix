@@ -484,7 +484,7 @@ def design_section(
                     )
 
             with st.expander("Tiles"):
-                col1, col2 = st.columns(2)
+                col1, col2, col3 = st.columns(3)
                 with col1:
                     st.session_state["selected_design_settings"][
                         "intensity_by"
@@ -515,6 +515,21 @@ def design_section(
                         ),
                         step=0.01,
                         help="How dark the darkest colors should be, between 0 and 1, where 1 is darkest.",
+                    )
+                with col3:
+                    st.session_state["selected_design_settings"][
+                        "amount_3d_effect"
+                    ] = st.slider(
+                        "3D effect",
+                        min_value=0,
+                        max_value=6,
+                        value=get_uploaded_setting(
+                            key="amount_3d_effect", default=1, type_=int
+                        ),
+                        step=1,
+                        help="Amount of 3D effect on the tiles. 0 turns off the 3D effect. "
+                        "1 or 2 are good defaults. The 3D effect helps separate tiles with "
+                        "the same color intensity.",
                     )
 
                 col1, col2, col3, col4 = st.columns([4, 5, 5, 6])

@@ -331,6 +331,7 @@ confusion_matrix_plot <- tryCatch(
             rm_zero_percentages = !design_settings$show_zero_percentages,
             rm_zero_text = !design_settings$show_zero_text,
             add_zero_shading = design_settings$show_zero_shading,
+            amount_3d_effect = as.integer(design_settings$amount_3d_effect),
             add_arrows = design_settings$show_arrows,
             arrow_size = design_settings$arrow_size,
             arrow_nudge_from_text = design_settings$arrow_nudge_from_text,
