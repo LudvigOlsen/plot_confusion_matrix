@@ -380,8 +380,9 @@ if st.session_state["step"] >= 2:
             DownloadHeader.centered_json_download(
                 data=st.session_state["selected_design_settings"],
                 file_name="design_settings.json",
-                label="Download design settings",
-                help="Download the design settings to allow reusing settings in future plots.",
+                label="Download design settings (*Generate first!*)",
+                help="Download the design settings to allow reusing settings in future plots. "
+                "Press `Generate plot` before downloading to include all the latest design changes.",
             )
 
             st.markdown("---")
